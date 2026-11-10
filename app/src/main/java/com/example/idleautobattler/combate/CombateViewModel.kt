@@ -1,5 +1,6 @@
 package com.example.idleautobattler.combate
 
+import GameState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
