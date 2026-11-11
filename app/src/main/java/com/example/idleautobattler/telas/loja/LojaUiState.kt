@@ -1,5 +1,7 @@
 package com.example.idleautobattler.telas.loja
 
+import com.example.idleautobattler.data.ItemLojaEntity
+
 data class LojaUiState(
     val itensExibidos: List<ItemLojaEntity> = emptyList(),
     val filtroTipo: String = "TODOS",

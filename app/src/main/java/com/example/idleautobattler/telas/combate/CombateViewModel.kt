@@ -2,7 +2,8 @@ package com.example.idleautobattler.telas.combate
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.idleautobattler.data.repository.JogoRepository
+import com.example.idleautobattler.data.JogoRepository
+import com.example.idleautobattler.data.ProgressoEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

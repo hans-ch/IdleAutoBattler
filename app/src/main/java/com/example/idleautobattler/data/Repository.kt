@@ -1,14 +1,23 @@
-package com.example.idleautobattler.data.repository
+package com.example.idleautobattler.data
 
-import com.example.idleautobattler.data.remote.ApiService
-import com.example.idleautobattler.data.remote.BonusServidorDto
-import com.example.idleautobattler.telas.combate.ProgressoDao
-import com.example.idleautobattler.telas.combate.ProgressoEntity
-import com.example.idleautobattler.telas.loja.ItemLojaDao
-import com.example.idleautobattler.telas.loja.ItemLojaEntity
-import com.example.idleautobattler.telas.perfil.SkinDao
-import com.example.idleautobattler.telas.perfil.SkinEntity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.idleautobattler.telas.combate.CombateViewModel
+import com.example.idleautobattler.telas.loja.LojaViewModel
 import kotlinx.coroutines.flow.Flow
+
+interface JogoRepository {
+    fun obterProgressoFlow(): Flow<ProgressoEntity?>
+    fun obterItensLojaFlow(): Flow<List<ItemLojaEntity>>
+    fun obterSkinsFlow(): Flow<List<SkinEntity>>
+
+    suspend fun salvarProgresso(progresso: ProgressoEntity): Result<Unit>
+    suspend fun adicionarItemLoja(item: ItemLojaEntity): Result<Unit>
+    suspend fun atualizarItemLoja(item: ItemLojaEntity): Result<Unit>
+    suspend fun deletarItemLoja(item: ItemLojaEntity): Result<Unit>
+
+    suspend fun buscarBonusServidor(): Result<BonusServidorDto>
+}
 
 class JogoRepositoryImpl(
     private val progressoDao: ProgressoDao,
@@ -56,5 +65,23 @@ class JogoRepositoryImpl(
         Result.success(dto)
     } catch (_: Exception) {
         Result.success(BonusServidorDto(multiplicadorOuro = 1.0, eventoAtivo = "Modo Offline", servidorOnline = false))
+    }
+}
+
+class AppViewModelFactory(
+    private val repository: JogoRepository
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return when {
+            modelClass.isAssignableFrom(CombateViewModel::class.java) -> {
+                CombateViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(LojaViewModel::class.java) -> {
+                LojaViewModel(repository) as T
+            }
+            else -> throw IllegalArgumentException("ViewModel desconhecido: ${modelClass.name}")
+        }
     }
 }

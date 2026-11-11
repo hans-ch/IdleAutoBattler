@@ -21,10 +21,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.idleautobattler.data.local.AppDatabase
-import com.example.idleautobattler.data.remote.RetrofitClient
-import com.example.idleautobattler.data.repository.AppViewModelFactory
-import com.example.idleautobattler.data.repository.JogoRepositoryImpl
+import com.example.idleautobattler.data.AppDatabase
+import com.example.idleautobattler.data.AppViewModelFactory
+import com.example.idleautobattler.data.JogoRepositoryImpl
+import com.example.idleautobattler.data.RetrofitClient
 import com.example.idleautobattler.telas.combate.CombateScreen
 import com.example.idleautobattler.telas.combate.CombateViewModel
 import com.example.idleautobattler.telas.configuracoes.ConfiguracoesScreen
@@ -78,7 +78,6 @@ fun NavegacaoPrincipal() {
 
     Scaffold(
         bottomBar = {
-            // Oculta a barra de navegação quando estiver na tela de Login
             if (currentRoute != Tela.Login.rota) {
                 NavigationBar(
                     containerColor = Color(0xFF0F172A),
@@ -119,7 +118,6 @@ fun NavegacaoPrincipal() {
             startDestination = Tela.Login.rota,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // A PRIMEIRA TELA AO ABRIR O APP: LOGIN
             composable(Tela.Login.rota) {
                 LoginScreen(
                     onLoginSucesso = { _ ->
