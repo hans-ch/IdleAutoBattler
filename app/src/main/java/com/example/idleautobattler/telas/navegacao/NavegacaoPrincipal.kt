@@ -1,0 +1,169 @@
+package com.example.idleautobattler.telas.navegacao
+
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.idleautobattler.data.local.AppDatabase
+import com.example.idleautobattler.data.remote.RetrofitClient
+import com.example.idleautobattler.data.repository.AppViewModelFactory
+import com.example.idleautobattler.data.repository.JogoRepositoryImpl
+import com.example.idleautobattler.telas.combate.CombateScreen
+import com.example.idleautobattler.telas.combate.CombateViewModel
+import com.example.idleautobattler.telas.configuracoes.ConfiguracoesScreen
+import com.example.idleautobattler.telas.logindiario.LoginDiarioScreen
+import com.example.idleautobattler.telas.loja.LojaScreen
+import com.example.idleautobattler.telas.loja.LojaViewModel
+import com.example.idleautobattler.telas.perfil.PerfilScreen
+import com.example.idleautobattler.telas.perfil.SelecaoSkinsScreen
+
+sealed class Tela(val rota: String, val titulo: String, val icon: ImageVector) {
+    object Combate : Tela("combate", "Combate", Icons.Default.SportsEsports)
+    object Loja : Tela("loja", "Loja", Icons.Default.ShoppingCart)
+    object Perfil : Tela("perfil", "Perfil", Icons.Default.Person)
+    object Skins : Tela("skins", "Skins", Icons.Default.Palette)
+    object Configuracoes : Tela("configuracoes", "Configurações", Icons.Default.Settings)
+    object LoginDiario : Tela("login_diario", "Login Diário", Icons.Default.CalendarMonth)
+}
+
+val telasBarraNavegacao = listOf(
+    Tela.Combate,
+    Tela.Loja,
+    Tela.Perfil,
+    Tela.Skins,
+    Tela.Configuracoes,
+    Tela.LoginDiario
+)
+
+@Composable
+fun NavegacaoPrincipal() {
+    val context = LocalContext.current
+    val navController = rememberNavController()
+
+    val database = remember { AppDatabase.getInstance(context) }
+    val repository = remember {
+        JogoRepositoryImpl(
+            progressoDao = database.progressoDao(),
+            itemLojaDao = database.itemLojaDao(),
+            skinDao = database.skinDao(),
+            apiService = RetrofitClient.apiService
+        )
+    }
+    val factory = remember { AppViewModelFactory(repository) }
+
+    val combateViewModel: CombateViewModel = viewModel(factory = factory)
+    val lojaViewModel: LojaViewModel = viewModel(factory = factory)
+
+    val combateState by combateViewModel.uiState.collectAsState()
+    val lojaState by lojaViewModel.uiState.collectAsState()
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color(0xFF0F172A),
+                contentColor = Color.White,
+                tonalElevation = 8.dp
+            ) {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                telasBarraNavegacao.forEach { tela ->
+                    NavigationBarItem(
+                        icon = { Icon(tela.icon, contentDescription = tela.titulo) },
+                        label = { Text(text = tela.titulo) },
+                        selected = currentRoute == tela.rota,
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color(0xFF00FFCC),
+                            selectedTextColor = Color(0xFF00FFCC),
+                            indicatorColor = Color(0xFF1E293B),
+                            unselectedIconColor = Color.Gray,
+                            unselectedTextColor = Color.Gray
+                        ),
+                        onClick = {
+                            if (currentRoute != tela.rota) {
+                                navController.navigate(tela.rota) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = Tela.Combate.rota,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(Tela.Combate.rota) {
+                CombateScreen(
+                    ouro = combateState.ouro,
+                    dps = combateState.dano,
+                    onGanharOuro = { combateViewModel.ganharOuro(it) },
+                    onPerderOuro = { combateViewModel.perderOuro(it) }
+                )
+            }
+
+            composable(Tela.Loja.rota) {
+                LojaScreen(
+                    ouro = lojaState.ouroJogador,
+                    danoAtual = lojaState.danoJogador,
+                    itens = lojaState.itensExibidos,
+                    ehAdmin = lojaState.ehAdmin,
+                    filtroAtual = lojaState.filtroTipo,
+                    ordenarPorPreco = lojaState.ordenarPorPreco,
+                    onComprarUpgrade = { lojaViewModel.comprarUpgrade(it) },
+                    onDeletarItem = { lojaViewModel.deletarItem(it) },
+                    onCriarItem = { t, p, tipo, d -> lojaViewModel.criarNovoItem(t, p, tipo, d) },
+                    onAlterarFiltro = { lojaViewModel.alterarFiltro(it) },
+                    onAlternarOrdenacao = { lojaViewModel.alternarOrdenacao() }
+                )
+            }
+
+            composable(Tela.Perfil.rota) {
+                PerfilScreen()
+            }
+
+            composable(Tela.Skins.rota) {
+                SelecaoSkinsScreen(
+                    skinEquipadaAtual = combateState.skinEquipada,
+                    ouroDisponivel = combateState.ouro,
+                    onEquiparSkin = { _ -> }
+                )
+            }
+
+            composable(Tela.Configuracoes.rota) {
+                ConfiguracoesScreen(
+                    ehAdmin = lojaState.ehAdmin,
+                    onAlternarAdmin = { lojaViewModel.alternarModoAdmin() }
+                )
+            }
+
+            composable(Tela.LoginDiario.rota) {
+                LoginDiarioScreen()
+            }
+        }
+    }
+}

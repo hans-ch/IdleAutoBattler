@@ -1,4 +1,4 @@
-package com.example.idleautobattler.Screen_Combat
+package com.example.idleautobattler.telas.combate
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -21,70 +21,60 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
-
 @Composable
-fun TelaAutoBattlerImersiva() {
-    // Estados do Jogo (Simulando o Auto-Battler)
-    var ouro by remember { mutableIntStateOf(1250) }
-    var dps by remember { mutableIntStateOf(15) }
-
-    // Status do Herói
+fun CombateScreen(
+    ouro: Int = 1250,
+    dps: Int = 15,
+    onGanharOuro: (Int) -> Unit = {},
+    onPerderOuro: (Int) -> Unit = {}
+) {
     val vidaHeroiMax = 100f
     var vidaHeroiAtual by remember { mutableFloatStateOf(100f) }
 
-    // Status do Inimigo
     var nomeMonstro by remember { mutableStateOf("Dragão de Cristal") }
     val vidaMonstroMax = 200f
     var vidaMonstroAtual by remember { mutableFloatStateOf(200f) }
 
-    // Log de Combate e Feedback Visual
     var logCombate by remember { mutableStateOf("A batalha automática começou!") }
     var animarAtaqueHeroi by remember { mutableStateOf(false) }
 
-    // Loop do Auto-Battler (Roda sozinho em background)
-    LaunchedEffect(Unit) {
+    LaunchedEffect(dps) {
         while (true) {
-            delay(500) // A cada 0.5 segundos o combate acontece
+            delay(500)
 
-            // Herói ataca o monstro
-            vidaMonstroAtual -= (dps / 2f)
+            val danoPorGolpe = (dps / 2f).coerceAtLeast(1f)
+            vidaMonstroAtual -= danoPorGolpe
             animarAtaqueHeroi = true
-            logCombate = "Herói causou ${dps / 2} de dano em $nomeMonstro"
+            logCombate = "Herói causou ${danoPorGolpe.toInt()} de dano em $nomeMonstro"
 
-            // Reseta animação rápida
             delay(100)
             animarAtaqueHeroi = false
 
-            // Verifica se o monstro morreu
             if (vidaMonstroAtual <= 0f) {
-                ouro += 50
+                onGanharOuro(50)
                 logCombate = "🎉 $nomeMonstro foi derrotado! +50 de Ouro."
                 delay(1000)
-                // Spawn de novo monstro mais forte
                 vidaMonstroAtual = vidaMonstroMax + 50f
                 nomeMonstro = if (nomeMonstro == "Dragão de Cristal") "Rei Goblin Corrompido" else "Dragão de Cristal"
             }
 
-            // Monstro contra-ataca o herói periodicamente
             delay(600)
             vidaHeroiAtual -= 5f
             if (vidaHeroiAtual <= 0f) {
                 logCombate = "⚠️ Herói foi derrotado! Recomeçando..."
                 delay(1500)
                 vidaHeroiAtual = vidaHeroiMax
-                ouro = (ouro - 20).coerceAtLeast(0) // Penalidade leve de ouro
+                onPerderOuro(20)
             }
         }
     }
 
-    // Escala animada para o ataque do herói
     val escalaHeroi by animateFloatAsState(
         targetValue = if (animarAtaqueHeroi) 1.2f else 1.0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "escalaHeroi"
     )
 
-    // Layout com visual estilo "Arena de RPG"
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -100,7 +90,6 @@ fun TelaAutoBattlerImersiva() {
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- TOPO: HUD de Recursos (Ouro e DPS) ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,7 +97,6 @@ fun TelaAutoBattlerImersiva() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Card de Ouro
                 Surface(
                     color = Color.Black.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(16.dp)
@@ -123,7 +111,6 @@ fun TelaAutoBattlerImersiva() {
                     }
                 }
 
-                // Card de DPS Automático
                 Surface(
                     color = Color.Black.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(16.dp)
@@ -137,12 +124,10 @@ fun TelaAutoBattlerImersiva() {
                 }
             }
 
-            // --- CENTRO: A ARENA DE BATALHA ---
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                // Inimigo (Topo da Arena)
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
                         modifier = Modifier
@@ -162,7 +147,6 @@ fun TelaAutoBattlerImersiva() {
                     Text(text = nomeMonstro, color = Color.White, style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Barra de Vida do Monstro
                     LinearProgressIndicator(
                         progress = { (vidaMonstroAtual / (vidaMonstroMax + 50f)).coerceIn(0f, 1f) },
                         modifier = Modifier
@@ -180,7 +164,6 @@ fun TelaAutoBattlerImersiva() {
                     )
                 }
 
-                // Indicador visual VS
                 Text(
                     text = "⚔️ VS ⚔️",
                     color = Color(0xFFFFD700),
@@ -188,7 +171,6 @@ fun TelaAutoBattlerImersiva() {
                     style = MaterialTheme.typography.bodyLarge
                 )
 
-                // Herói (Parte inferior da Arena)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.scale(escalaHeroi)
@@ -211,7 +193,6 @@ fun TelaAutoBattlerImersiva() {
                     Text(text = "Herói Automático", color = Color.White, style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Barra de Vida do Herói
                     LinearProgressIndicator(
                         progress = { (vidaHeroiAtual / vidaHeroiMax).coerceIn(0f, 1f) },
                         modifier = Modifier
@@ -224,7 +205,6 @@ fun TelaAutoBattlerImersiva() {
                 }
             }
 
-            // --- ABAIXO: Caixa de Log de Combate (Estilo RPG) ---
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -233,7 +213,9 @@ fun TelaAutoBattlerImersiva() {
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(12.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

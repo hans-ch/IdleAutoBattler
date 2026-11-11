@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.idleautobattler.Screen_Combat.TelaAutoBattlerImersiva
+import com.example.idleautobattler.telas.navegacao.NavegacaoPrincipal
 import com.example.idleautobattler.ui.theme.IdleAutoBattlerTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             IdleAutoBattlerTheme {
-                TelaAutoBattlerImersiva()
+                NavegacaoPrincipal()
             }
         }
     }
