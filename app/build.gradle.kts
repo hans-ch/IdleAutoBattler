@@ -6,13 +6,13 @@ plugins {
 android {
     namespace = "com.example.idleautobattler"
     compileSdk {
-        version = release(37)
+        version = release(36)
     }
 
     defaultConfig {
         applicationId = "com.example.idleautobattler"
         minSdk = 29
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
