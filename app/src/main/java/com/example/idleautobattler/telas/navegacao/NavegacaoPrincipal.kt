@@ -2,7 +2,7 @@ package com.example.idleautobattler.telas.navegacao
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -28,19 +28,19 @@ import com.example.idleautobattler.data.repository.JogoRepositoryImpl
 import com.example.idleautobattler.telas.combate.CombateScreen
 import com.example.idleautobattler.telas.combate.CombateViewModel
 import com.example.idleautobattler.telas.configuracoes.ConfiguracoesScreen
-import com.example.idleautobattler.telas.logindiario.LoginDiarioScreen
+import com.example.idleautobattler.telas.login.LoginScreen
 import com.example.idleautobattler.telas.loja.LojaScreen
 import com.example.idleautobattler.telas.loja.LojaViewModel
 import com.example.idleautobattler.telas.perfil.PerfilScreen
 import com.example.idleautobattler.telas.perfil.SelecaoSkinsScreen
 
 sealed class Tela(val rota: String, val titulo: String, val icon: ImageVector) {
+    object Login : Tela("login", "Login", Icons.AutoMirrored.Filled.Login)
     object Combate : Tela("combate", "Combate", Icons.Default.SportsEsports)
     object Loja : Tela("loja", "Loja", Icons.Default.ShoppingCart)
     object Perfil : Tela("perfil", "Perfil", Icons.Default.Person)
     object Skins : Tela("skins", "Skins", Icons.Default.Palette)
     object Configuracoes : Tela("configuracoes", "Configurações", Icons.Default.Settings)
-    object LoginDiario : Tela("login_diario", "Login Diário", Icons.Default.CalendarMonth)
 }
 
 val telasBarraNavegacao = listOf(
@@ -48,8 +48,7 @@ val telasBarraNavegacao = listOf(
     Tela.Loja,
     Tela.Perfil,
     Tela.Skins,
-    Tela.Configuracoes,
-    Tela.LoginDiario
+    Tela.Configuracoes
 )
 
 @Composable
@@ -74,49 +73,63 @@ fun NavegacaoPrincipal() {
     val combateState by combateViewModel.uiState.collectAsState()
     val lojaState by lojaViewModel.uiState.collectAsState()
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = Color(0xFF0F172A),
-                contentColor = Color.White,
-                tonalElevation = 8.dp
-            ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
-                telasBarraNavegacao.forEach { tela ->
-                    NavigationBarItem(
-                        icon = { Icon(tela.icon, contentDescription = tela.titulo) },
-                        label = { Text(text = tela.titulo) },
-                        selected = currentRoute == tela.rota,
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFF00FFCC),
-                            selectedTextColor = Color(0xFF00FFCC),
-                            indicatorColor = Color(0xFF1E293B),
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray
-                        ),
-                        onClick = {
-                            if (currentRoute != tela.rota) {
-                                navController.navigate(tela.rota) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+            // Oculta a barra de navegação quando estiver na tela de Login
+            if (currentRoute != Tela.Login.rota) {
+                NavigationBar(
+                    containerColor = Color(0xFF0F172A),
+                    contentColor = Color.White,
+                    tonalElevation = 8.dp
+                ) {
+                    telasBarraNavegacao.forEach { tela ->
+                        NavigationBarItem(
+                            icon = { Icon(tela.icon, contentDescription = tela.titulo) },
+                            label = { Text(text = tela.titulo) },
+                            selected = currentRoute == tela.rota,
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color(0xFF00FFCC),
+                                selectedTextColor = Color(0xFF00FFCC),
+                                indicatorColor = Color(0xFF1E293B),
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray
+                            ),
+                            onClick = {
+                                if (currentRoute != tela.rota) {
+                                    navController.navigate(tela.rota) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Tela.Combate.rota,
+            startDestination = Tela.Login.rota,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // A PRIMEIRA TELA AO ABRIR O APP: LOGIN
+            composable(Tela.Login.rota) {
+                LoginScreen(
+                    onLoginSucesso = { _ ->
+                        navController.navigate(Tela.Combate.rota) {
+                            popUpTo(Tela.Login.rota) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
             composable(Tela.Combate.rota) {
                 CombateScreen(
                     ouro = combateState.ouro,
@@ -157,12 +170,13 @@ fun NavegacaoPrincipal() {
             composable(Tela.Configuracoes.rota) {
                 ConfiguracoesScreen(
                     ehAdmin = lojaState.ehAdmin,
-                    onAlternarAdmin = { lojaViewModel.alternarModoAdmin() }
+                    onAlternarAdmin = { lojaViewModel.alternarModoAdmin() },
+                    onFazerLogout = {
+                        navController.navigate(Tela.Login.rota) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
                 )
-            }
-
-            composable(Tela.LoginDiario.rota) {
-                LoginDiarioScreen()
             }
         }
     }

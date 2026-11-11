@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -27,7 +28,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ConfiguracoesScreen(
     ehAdmin: Boolean = false,
-    onAlternarAdmin: (Boolean) -> Unit = {}
+    onAlternarAdmin: (Boolean) -> Unit = {},
+    onFazerLogout: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
 
@@ -182,6 +184,17 @@ fun ConfiguracoesScreen(
                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Resetar Progresso de Combate", color = Color.White)
+                    }
+
+                    Button(
+                        onClick = onFazerLogout,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF374151)),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Sair / Log-out da Conta", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }
