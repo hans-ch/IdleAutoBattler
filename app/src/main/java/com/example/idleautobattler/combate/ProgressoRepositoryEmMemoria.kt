@@ -1,7 +1,5 @@
 package com.example.idleautobattler.combate
 
-import GameState
-
 class ProgressoRepositoryEmMemoria(
     private var estadoSalvo: GameState? = null
 ) : ProgressoRepository {

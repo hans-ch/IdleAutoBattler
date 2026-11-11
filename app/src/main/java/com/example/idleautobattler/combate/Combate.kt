@@ -1,7 +1,5 @@
 package com.example.idleautobattler.combate
 
-import GameState
-
 fun aplicarTick(estado: GameState): GameState {
     val novaVida = estado.vidaAtual - estado.dano
 

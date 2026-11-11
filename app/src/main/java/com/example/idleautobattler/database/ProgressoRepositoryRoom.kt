@@ -1,6 +1,6 @@
 package com.example.idleautobattler.database
 
-import GameState
+import com.example.idleautobattler.combate.GameState
 import com.example.idleautobattler.combate.ProgressoRepository
 
 /** Adaptador Room para a interface ja usada pelo ViewModel de combate. */

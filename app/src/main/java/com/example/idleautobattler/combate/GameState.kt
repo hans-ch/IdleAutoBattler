@@ -1,3 +1,5 @@
+package com.example.idleautobattler.combate
+
 data class GameState(
     val ouro: Int = 0,
     val dano: Int = 1,

@@ -1,6 +1,6 @@
 package com.example.idleautobattler.Shop
 
-import GameState
+import com.example.idleautobattler.combate.GameState
 
 fun comprarUpgrade(
     gameState: GameState,
