@@ -130,8 +130,7 @@ fun NavegacaoPrincipal() {
 
             composable(Tela.Combate.rota) {
                 CombateScreen(
-                    ouro = combateState.ouro,
-                    dps = combateState.dano,
+                    uiState = combateState, //// passando o estado completo gerado pelo ViewModel
                     onGanharOuro = { combateViewModel.ganharOuro(it) },
                     onPerderOuro = { combateViewModel.perderOuro(it) }
                 )

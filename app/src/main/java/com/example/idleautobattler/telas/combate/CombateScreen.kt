@@ -19,58 +19,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 
 @Composable
 fun CombateScreen(
-    ouro: Int = 1250,
-    dps: Int = 15,
+    uiState: CombateUiState,
     onGanharOuro: (Int) -> Unit = {},
     onPerderOuro: (Int) -> Unit = {}
 ) {
-    val vidaHeroiMax = 100f
-    var vidaHeroiAtual by remember { mutableFloatStateOf(100f) }
-
-    var nomeMonstro by remember { mutableStateOf("Dragão de Cristal") }
-    val vidaMonstroMax = 200f
-    var vidaMonstroAtual by remember { mutableFloatStateOf(200f) }
-
-    var logCombate by remember { mutableStateOf("A batalha automática começou!") }
-    var animarAtaqueHeroi by remember { mutableStateOf(false) }
-
-    LaunchedEffect(dps) {
-        while (true) {
-            delay(500)
-
-            val danoPorGolpe = (dps / 2f).coerceAtLeast(1f)
-            vidaMonstroAtual -= danoPorGolpe
-            animarAtaqueHeroi = true
-            logCombate = "Herói causou ${danoPorGolpe.toInt()} de dano em $nomeMonstro"
-
-            delay(100)
-            animarAtaqueHeroi = false
-
-            if (vidaMonstroAtual <= 0f) {
-                onGanharOuro(50)
-                logCombate = "🎉 $nomeMonstro foi derrotado! +50 de Ouro."
-                delay(1000)
-                vidaMonstroAtual = vidaMonstroMax + 50f
-                nomeMonstro = if (nomeMonstro == "Dragão de Cristal") "Rei Goblin Corrompido" else "Dragão de Cristal"
-            }
-
-            delay(600)
-            vidaHeroiAtual -= 5f
-            if (vidaHeroiAtual <= 0f) {
-                logCombate = "⚠️ Herói foi derrotado! Recomeçando..."
-                delay(1500)
-                vidaHeroiAtual = vidaHeroiMax
-                onPerderOuro(20)
-            }
-        }
-    }
-
+    // Animação de escala do herói controlada pelo estado vindo do ViewModel
     val escalaHeroi by animateFloatAsState(
-        targetValue = if (animarAtaqueHeroi) 1.2f else 1.0f,
+        targetValue = if (uiState.animarAtaqueHeroi) 1.2f else 1.0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "escalaHeroi"
     )
@@ -90,6 +48,7 @@ fun CombateScreen(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Barra superior com Ouro e DPS
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,7 +66,7 @@ fun CombateScreen(
                     ) {
                         Icon(Icons.Default.Star, contentDescription = "Ouro", tint = Color(0xFFFFD700))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "$ouro", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                        Text(text = "${uiState.ouro}", color = Color.White, style = MaterialTheme.typography.titleMedium)
                     }
                 }
 
@@ -116,7 +75,7 @@ fun CombateScreen(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
-                        text = "DPS: $dps/s",
+                        text = "DPS: ${uiState.dano}/s",
                         color = Color(0xFF00FFCC),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -124,10 +83,12 @@ fun CombateScreen(
                 }
             }
 
+            // Área central: Monstro, VS e Herói
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
+                // Seção do Monstro
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
                         modifier = Modifier
@@ -144,11 +105,12 @@ fun CombateScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = nomeMonstro, color = Color.White, style = MaterialTheme.typography.titleLarge)
+                    Text(text = uiState.nomeMonstro, color = Color.White, style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(6.dp))
 
+                    val vidaMonstroTotalMax = uiState.vidaMonstroMax + 50f
                     LinearProgressIndicator(
-                        progress = { (vidaMonstroAtual / (vidaMonstroMax + 50f)).coerceIn(0f, 1f) },
+                        progress = { (uiState.vidaMonstroAtual / vidaMonstroTotalMax).coerceIn(0f, 1f) },
                         modifier = Modifier
                             .width(220.dp)
                             .height(12.dp)
@@ -158,7 +120,7 @@ fun CombateScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "${vidaMonstroAtual.toInt()} / ${(vidaMonstroMax + 50f).toInt()}",
+                        text = "${uiState.vidaMonstroAtual.toInt()} / ${vidaMonstroTotalMax.toInt()}",
                         color = Color.LightGray,
                         fontSize = 12.sp
                     )
@@ -171,6 +133,7 @@ fun CombateScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
 
+                // Seção do Herói
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.scale(escalaHeroi)
@@ -190,11 +153,11 @@ fun CombateScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Herói Automático", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                    Text(text = "Herói (${uiState.skinEquipada})", color = Color.White, style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(6.dp))
 
                     LinearProgressIndicator(
-                        progress = { (vidaHeroiAtual / vidaHeroiMax).coerceIn(0f, 1f) },
+                        progress = { (uiState.vidaHeroiAtual / uiState.vidaHeroiMax).coerceIn(0f, 1f) },
                         modifier = Modifier
                             .width(180.dp)
                             .height(10.dp)
@@ -205,6 +168,7 @@ fun CombateScreen(
                 }
             }
 
+            // Caixa de Log de Combate
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -219,7 +183,7 @@ fun CombateScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = logCombate,
+                        text = uiState.logCombate,
                         color = Color(0xFFE2E8F0),
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 2
