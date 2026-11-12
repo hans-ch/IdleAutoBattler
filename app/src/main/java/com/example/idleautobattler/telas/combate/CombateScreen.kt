@@ -64,9 +64,17 @@ fun CombateScreen(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Star, contentDescription = "Ouro", tint = Color(0xFFFFD700))
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = "Ouro",
+                            tint = Color(0xFFFFD700)
+                        )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "${uiState.ouro}", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = "${uiState.ouro}",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 }
 
@@ -97,11 +105,18 @@ fun CombateScreen(
                             .background(Color.Red.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Inimigo",
-                            modifier = Modifier.size(50.dp),
-                            tint = Color(0xFFFF416C)
+                        // Exibe o Emoji dinâmico baseado no nome do monstro atual
+                        val emojiMonstro = when (uiState.nomeMonstro) {
+                            "Dragão de Cristal" -> "🐉"
+                            "Rei Goblin Corrompido" -> "👺"
+                            "Esqueleto Guerreiro" -> "💀"
+                            "Golem de Pedra" -> "🗿"
+                            else -> "👾" // Monstro padrão / genérico
+                        }
+
+                        Text(
+                            text = emojiMonstro,
+                            fontSize = 42.sp
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -145,19 +160,36 @@ fun CombateScreen(
                             .background(Color.Blue.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Herói",
-                            modifier = Modifier.size(50.dp),
-                            tint = Color(0xFF00B4DB)
+                        // Exibe o Emoji dinâmico baseado na skin equipada
+                        val emojiSkin = when (uiState.skinEquipada) {
+                            "Mago" -> "🧙‍♂️"
+                            "Ninja das Sombras" -> "🥷"
+                            "Cyborg RPG" -> "🤖"
+                            "Matador de Dragões" -> "🐲"
+                            "Rei Supremo" -> "👑"
+                            else -> "🗡️" // Herói Padrão
+                        }
+
+                        Text(
+                            text = emojiSkin,
+                            fontSize = 42.sp
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Herói (${uiState.skinEquipada})", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = "Herói (${uiState.skinEquipada})",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium
+                    )
                     Spacer(modifier = Modifier.height(6.dp))
 
                     LinearProgressIndicator(
-                        progress = { (uiState.vidaHeroiAtual / uiState.vidaHeroiMax).coerceIn(0f, 1f) },
+                        progress = {
+                            (uiState.vidaHeroiAtual / uiState.vidaHeroiMax).coerceIn(
+                                0f,
+                                1f
+                            )
+                        },
                         modifier = Modifier
                             .width(180.dp)
                             .height(10.dp)
@@ -166,28 +198,28 @@ fun CombateScreen(
                         trackColor = Color.DarkGray
                     )
                 }
-            }
 
-            // Caixa de Log de Combate
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp),
-                color = Color.Black.copy(alpha = 0.7f),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Box(
+                // Caixa de Log de Combate
+                Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .height(70.dp),
+                    color = Color.Black.copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
-                        text = uiState.logCombate,
-                        color = Color(0xFFE2E8F0),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = uiState.logCombate,
+                            color = Color(0xFFE2E8F0),
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2
+                        )
+                    }
                 }
             }
         }

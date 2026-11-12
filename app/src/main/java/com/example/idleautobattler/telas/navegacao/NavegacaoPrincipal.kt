@@ -160,7 +160,9 @@ fun NavegacaoPrincipal() {
                 SelecaoSkinsScreen(
                     skinEquipadaAtual = combateState.skinEquipada,
                     ouroDisponivel = combateState.ouro,
-                    onEquiparSkin = { _ -> }
+                    onEquiparSkin = { skinNome ->
+                        combateViewModel.equiparSkin(skinNome)
+                    }
                 )
             }
 

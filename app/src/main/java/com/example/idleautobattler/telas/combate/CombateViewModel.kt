@@ -1,5 +1,6 @@
 package com.example.idleautobattler.telas.combate
 
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.idleautobattler.data.JogoRepository
@@ -116,6 +117,11 @@ class CombateViewModel(
         val novoOuro = (_uiState.value.ouro - valor).coerceAtLeast(0)
         _uiState.update { it.copy(ouro = novoOuro) }
         persistir()
+    }
+
+    fun equiparSkin(novaSkin: String) {
+        _uiState.update { it.copy(skinEquipada = novaSkin) }
+        persistir() // Salva automaticamente no banco de dados Room
     }
 
     private fun persistir() {
