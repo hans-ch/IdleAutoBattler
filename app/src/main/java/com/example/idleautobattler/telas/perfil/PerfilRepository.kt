@@ -1,10 +1,7 @@
 package com.example.idleautobattler.telas.perfil
 
-import androidx.room3.immediateTransaction
-import androidx.room3.useWriterConnection
 import com.example.idleautobattler.data.AppDatabase
-import com.example.idleautobattler.data.ProgressoEntity
-import com.example.idleautobattler.data.SkinEntity
+import com.example.idleautobattler.telas.combate.ProgressoEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -14,20 +11,15 @@ class PerfilRepository(
     private val progressoDao = database.progressoDao()
     private val skinDao = database.skinDao()
 
-    val progresso: Flow<ProgressoEntity?> =
-        progressoDao.obterProgressoFlow()
-
-    val skins: Flow<List<SkinEntity>> =
-        skinDao.obterSkinsFlow()
-
-    val skinEquipada: Flow<SkinEntity?> =
-        skinDao.obterSkinEquipadaFlow()
+    val progresso: Flow<ProgressoEntity?> = progressoDao.obterProgressoFlow()
+    val skins: Flow<List<SkinEntity>> = skinDao.obterSkinsFlow()
+    val skinEquipada: Flow<SkinEntity?> = skinDao.obterSkinEquipadaFlow()
 
     suspend fun inicializar(nomeInicial: String) {
         if (progressoDao.obterProgressoFlow().first() == null) {
             progressoDao.salvarProgresso(
                 ProgressoEntity(
-                    nomeJogador = nomeInicial.trim().ifBlank { "Guerreiro" }
+                    skinEquipada = "Herói Padrão"
                 )
             )
         }
@@ -84,47 +76,22 @@ class PerfilRepository(
         }
     }
 
-    suspend fun atualizarNome(nome: String) {
-        val nomeValidado = nome.trim()
-        if (nomeValidado.isNotEmpty()) {
-            progressoDao.atualizarNome(nomeValidado)
-        }
-    }
-
     suspend fun comprarSkin(skin: SkinEntity): Boolean {
         if (skin.desbloqueada) return true
-
-        return database.useWriterConnection { connection ->
-            connection.immediateTransaction {
-                val linhasAtualizadas =
-                    progressoDao.descontarOuroSeSuficiente(skin.precoOuro)
-
-                if (linhasAtualizadas == 0) {
-                    false
-                } else {
-                    skinDao.desbloquearSkin(skin.id)
-                    true
-                }
-            }
+        val progressoAtual = progressoDao.obterProgressoFlow().first() ?: return false
+        if (progressoAtual.ouro >= skin.precoOuro) {
+            progressoDao.salvarProgresso(progressoAtual.copy(ouro = progressoAtual.ouro - skin.precoOuro))
+            skinDao.desbloquearSkin(skin.id)
+            return true
         }
+        return false
     }
+
     suspend fun equiparSkin(skin: SkinEntity): Boolean {
         if (!skin.desbloqueada) return false
-
-        return database.useWriterConnection { connection ->
-            connection.immediateTransaction {
-                skinDao.equiparSkin(skin.id)
-
-                val progressoAtual =
-                    progressoDao.obterProgressoFlow().first()
-                        ?: return@immediateTransaction false
-
-                progressoDao.salvarProgresso(
-                    progressoAtual.copy(skinEquipada = skin.nome)
-                )
-
-                true
-            }
-        }
+        skinDao.equiparSkin(skin.id)
+        val progressoAtual = progressoDao.obterProgressoFlow().first() ?: return false
+        progressoDao.salvarProgresso(progressoAtual.copy(skinEquipada = skin.nome))
+        return true
     }
 }

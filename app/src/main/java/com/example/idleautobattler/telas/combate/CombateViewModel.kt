@@ -29,6 +29,17 @@ class CombateViewModel(
     private fun carregarDadosLocaisERemotos() {
         viewModelScope.launch {
             try {
+                val resultadoBonus = repository.buscarBonusServidor()
+                resultadoBonus.onSuccess { bonus ->
+                    _uiState.update { it.copy(eventoBonusTexto = bonus.eventoAtivo) }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(mensagemErro = e.message) }
+            }
+        }
+
+        viewModelScope.launch {
+            try {
                 repository.obterProgressoFlow().collect { progresso ->
                     if (progresso != null) {
                         _uiState.update {

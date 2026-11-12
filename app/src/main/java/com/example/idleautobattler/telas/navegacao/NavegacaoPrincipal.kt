@@ -6,8 +6,6 @@ import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -45,6 +43,8 @@ import com.example.idleautobattler.telas.perfil.PerfilRepository
 import com.example.idleautobattler.telas.perfil.PerfilScreen
 import com.example.idleautobattler.telas.perfil.PerfilViewModel
 import com.example.idleautobattler.telas.perfil.SelecaoSkinsScreen
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.SportsEsports
 
 sealed class Tela(
     val rota: String,
@@ -56,8 +56,7 @@ sealed class Tela(
     object Loja : Tela("loja", "Loja", Icons.Default.ShoppingCart)
     object Perfil : Tela("perfil", "Perfil", Icons.Default.Person)
     object Skins : Tela("skins", "Skins", Icons.Default.Palette)
-    object Configuracoes :
-        Tela("configuracoes", "Configurações", Icons.Default.Settings)
+    object Configuracoes : Tela("configuracoes", "Configurações", Icons.Default.Settings)
 }
 
 val telasBarraNavegacao = listOf(
@@ -111,14 +110,9 @@ fun NavegacaoPrincipal() {
         }
     }
 
-    val combateViewModel: CombateViewModel =
-        viewModel(factory = jogoFactory)
-
-    val lojaViewModel: LojaViewModel =
-        viewModel(factory = jogoFactory)
-
-    val perfilViewModel: PerfilViewModel =
-        viewModel(factory = perfilFactory)
+    val combateViewModel: CombateViewModel = viewModel(factory = jogoFactory)
+    val lojaViewModel: LojaViewModel = viewModel(factory = jogoFactory)
+    val perfilViewModel: PerfilViewModel = viewModel(factory = perfilFactory)
 
     val combateState by combateViewModel.uiState.collectAsState()
     val lojaState by lojaViewModel.uiState.collectAsState()
@@ -158,8 +152,7 @@ fun NavegacaoPrincipal() {
                                 if (currentRoute != tela.rota) {
                                     navController.navigate(tela.rota) {
                                         popUpTo(
-                                            navController.graph
-                                                .findStartDestination().id
+                                            navController.graph.findStartDestination().id
                                         ) {
                                             saveState = true
                                         }
@@ -196,21 +189,9 @@ fun NavegacaoPrincipal() {
             composable(Tela.Combate.rota) {
                 CombateScreen(
                     uiState = combateState,
-<<<<<<< HEAD
-                    onGanharOuro = { quantidade ->
-                        combateViewModel.ganharOuro(quantidade)
-                    },
-                    onPerderOuro = { quantidade ->
-                        combateViewModel.perderOuro(quantidade)
-                    },
-                    onGolpeEspecial = {
-                        combateViewModel.desferirGolpeEspecial()
-                    }
-=======
                     onGanharOuro = { combateViewModel.ganharOuro(it) },
                     onPerderOuro = { combateViewModel.perderOuro(it) },
                     onGolpeEspecial = { combateViewModel.desferirGolpeEspecial() }
->>>>>>> ec9f63842de293f59d0ff08a1e0c1ef9e2844443
                 )
             }
 
@@ -221,34 +202,10 @@ fun NavegacaoPrincipal() {
                     itens = lojaState.itensExibidos,
                     ehAdmin = lojaState.ehAdmin,
                     filtroAtual = lojaState.filtroTipo,
-<<<<<<< HEAD
-                    ordenarPorPreco = lojaState.ordenarPorPreco,
-                    onComprarUpgrade = { item ->
-                        lojaViewModel.comprarUpgrade(item)
-                    },
-                    onDeletarItem = { item ->
-                        lojaViewModel.deletarItem(item)
-                    },
-                    onCriarItem = { titulo, preco, tipo, descricao ->
-                        lojaViewModel.criarNovoItem(
-                            titulo,
-                            preco,
-                            tipo,
-                            descricao
-                        )
-                    },
-                    onAlterarFiltro = { filtro ->
-                        lojaViewModel.alterarFiltro(filtro)
-                    },
-                    onAlternarOrdenacao = {
-                        lojaViewModel.alternarOrdenacao()
-                    }
-=======
                     onComprarUpgrade = { lojaViewModel.comprarUpgrade(it) },
                     onDeletarItem = { lojaViewModel.deletarItem(it) },
                     onCriarItem = { t, p, tipo, d -> lojaViewModel.criarNovoItem(t, p, tipo, d) },
                     onAlterarFiltro = { lojaViewModel.alterarFiltro(it) }
->>>>>>> ec9f63842de293f59d0ff08a1e0c1ef9e2844443
                 )
             }
 

@@ -1,22 +1,14 @@
 package com.example.idleautobattler.telas.perfil
 
-<<<<<<< HEAD
-import androidx.room3.Dao
-import androidx.room3.Insert
-import androidx.room3.OnConflictStrategy
-import androidx.room3.Query
-import androidx.room3.Transaction
-import androidx.room3.Update
-import com.example.idleautobattler.data.SkinEntity
-=======
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
->>>>>>> ec9f63842de293f59d0ff08a1e0c1ef9e2844443
 import kotlinx.coroutines.flow.Flow
+
 @Dao
 interface SkinDao {
     @Query("SELECT * FROM skins ORDER BY nome")
@@ -33,6 +25,9 @@ interface SkinDao {
 
     @Update
     suspend fun atualizarSkin(skin: SkinEntity)
+
+    @Delete
+    suspend fun deletarSkin(skin: SkinEntity)
 
     @Query("SELECT COUNT(*) FROM skins")
     suspend fun contarSkins(): Int

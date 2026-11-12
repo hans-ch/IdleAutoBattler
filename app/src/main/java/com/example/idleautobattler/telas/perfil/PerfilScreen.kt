@@ -31,6 +31,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -39,8 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.example.idleautobattler.data.SkinEntity
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -203,7 +202,6 @@ fun PerfilScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.atualizarNome(novoNome)
                         mostrarEdicaoNome = false
                     }
                 ) {
@@ -433,7 +431,7 @@ private fun ItemAtributo(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            androidx.compose.material3.Icon(
+            Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = cor,

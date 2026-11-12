@@ -2,8 +2,7 @@ package com.example.idleautobattler.telas.perfil
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.idleautobattler.data.ProgressoEntity
-import com.example.idleautobattler.data.SkinEntity
+import com.example.idleautobattler.telas.combate.ProgressoEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +16,7 @@ data class PerfilUiState(
     val skinEquipada: SkinEntity? = null
 ) {
     val nome: String
-        get() = progresso?.nomeJogador ?: "Guerreiro"
+        get() = "Guerreiro"
 
     val ouro: Int
         get() = progresso?.ouro ?: 0
@@ -53,41 +52,14 @@ class PerfilViewModel(
         }
     }
 
-    fun atualizarNome(nome: String) {
-        val nomeValidado = nome.trim()
-
-        when {
-            nomeValidado.isBlank() -> {
-                _mensagem.value = "O nome não pode ficar vazio."
-            }
-
-            nomeValidado.length > 20 -> {
-                _mensagem.value = "O nome deve ter no máximo 20 caracteres."
-            }
-
-            else -> viewModelScope.launch {
-                repository.atualizarNome(nomeValidado)
-                _mensagem.value = "Nome atualizado."
-            }
-        }
-    }
-
     fun comprarOuEquipar(skin: SkinEntity) {
         viewModelScope.launch {
             if (skin.desbloqueada) {
                 val equipada = repository.equiparSkin(skin)
-                _mensagem.value = if (equipada) {
-                    "Skin equipada."
-                } else {
-                    "Não foi possível equipar essa skin."
-                }
+                _mensagem.value = if (equipada) "Skin equipada." else "Não foi possível equipar essa skin."
             } else {
                 val comprada = repository.comprarSkin(skin)
-                _mensagem.value = if (comprada) {
-                    "Skin desbloqueada."
-                } else {
-                    "Ouro insuficiente."
-                }
+                _mensagem.value = if (comprada) "Skin desbloqueada." else "Ouro insuficiente."
             }
         }
     }
