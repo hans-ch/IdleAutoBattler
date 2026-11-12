@@ -132,7 +132,8 @@ fun NavegacaoPrincipal() {
                 CombateScreen(
                     uiState = combateState, //// passando o estado completo gerado pelo ViewModel
                     onGanharOuro = { combateViewModel.ganharOuro(it) },
-                    onPerderOuro = { combateViewModel.perderOuro(it) }
+                    onPerderOuro = { combateViewModel.perderOuro(it) },
+                    onGolpeEspecial = {combateViewModel.desferirGolpeEspecial()}
                 )
             }
 

@@ -9,9 +9,16 @@ data class CombateUiState(
     val vidaMonstroMax: Float = 200f,
     val nomeMonstro: String = "Dragão de Cristal",
     val logCombate: String = "A batalha automática começou!",
-    val animarAtaqueHeroi: Boolean = false, // Novo: controla a animação do herói no ViewModel
+    val animarAtaqueHeroi: Boolean = false,
     val eventoBonusTexto: String = "Bônus de Evento Ativo",
     val skinEquipada: String = "Herói Padrão",
-    val isLoading: Boolean = false,
-    val mensagemErro: String? = null
+    val podeAtacarEspecial: Boolean = true,
+
+// Novos campos para o Sistema de Fases
+val faseAtual: Int = 1,
+val monstrosDerrotadosNaFase: Int = 0,
+val monstrosNecessariosParaProximaFase: Int = 5,
+
+val isLoading: Boolean = false,
+val mensagemErro: String? = null
 )

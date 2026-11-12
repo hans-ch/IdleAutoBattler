@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -24,9 +23,16 @@ import androidx.compose.ui.unit.sp
 fun CombateScreen(
     uiState: CombateUiState,
     onGanharOuro: (Int) -> Unit = {},
-    onPerderOuro: (Int) -> Unit = {}
+    onPerderOuro: (Int) -> Unit = {},
+    onGolpeEspecial: () -> Unit = {}
 ) {
-    // Animação de escala do herói controlada pelo estado vindo do ViewModel
+    // Define as cores de fundo com base na fase atual
+    val coresFundo = when (uiState.faseAtual % 3) {
+        1 -> listOf(Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460)) // Caverna de Cristal (Azul)
+        2 -> listOf(Color(0xFF1B3B2B), Color(0xFF11261B), Color(0xFF09140E)) // Floresta Sombria (Verde)
+        else -> listOf(Color(0xFF3E1A1A), Color(0xFF2E1616), Color(0xFF1A0F0F)) // Castelo Vulcânico (Vermelho/Escuro)
+    }
+
     val escalaHeroi by animateFloatAsState(
         targetValue = if (uiState.animarAtaqueHeroi) 1.2f else 1.0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -37,18 +43,17 @@ fun CombateScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460))
-                )
+                Brush.verticalGradient(colors = coresFundo)
             )
             .padding(16.dp)
     ) {
+        // Coluna principal para organizar o topo, o centro e o rodapé perfeitamente
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Barra superior com Ouro e DPS
+            // Barra superior com Ouro, Fase e DPS
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -78,6 +83,19 @@ fun CombateScreen(
                     }
                 }
 
+                // Indicador de Fase Atual
+                Surface(
+                    color = Color.Black.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "Fase ${uiState.faseAtual} (${uiState.monstrosDerrotadosNaFase}/${uiState.monstrosNecessariosParaProximaFase})",
+                        color = Color(0xFFFFD700),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+
                 Surface(
                     color = Color.Black.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(16.dp)
@@ -94,7 +112,7 @@ fun CombateScreen(
             // Área central: Monstro, VS e Herói
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(32.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 // Seção do Monstro
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -105,13 +123,12 @@ fun CombateScreen(
                             .background(Color.Red.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Exibe o Emoji dinâmico baseado no nome do monstro atual
                         val emojiMonstro = when (uiState.nomeMonstro) {
                             "Dragão de Cristal" -> "🐉"
                             "Rei Goblin Corrompido" -> "👺"
                             "Esqueleto Guerreiro" -> "💀"
                             "Golem de Pedra" -> "🗿"
-                            else -> "👾" // Monstro padrão / genérico
+                            else -> "👾"
                         }
 
                         Text(
@@ -160,14 +177,13 @@ fun CombateScreen(
                             .background(Color.Blue.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Exibe o Emoji dinâmico baseado na skin equipada
                         val emojiSkin = when (uiState.skinEquipada) {
-                            "Mago" -> "🧙‍♂️"
+                            "Mago de Fogo" -> "🧙‍♂️"
                             "Ninja das Sombras" -> "🥷"
                             "Cyborg RPG" -> "🤖"
                             "Matador de Dragões" -> "🐲"
                             "Rei Supremo" -> "👑"
-                            else -> "🗡️" // Herói Padrão
+                            else -> "🗡️"
                         }
 
                         Text(
@@ -185,10 +201,7 @@ fun CombateScreen(
 
                     LinearProgressIndicator(
                         progress = {
-                            (uiState.vidaHeroiAtual / uiState.vidaHeroiMax).coerceIn(
-                                0f,
-                                1f
-                            )
+                            (uiState.vidaHeroiAtual / uiState.vidaHeroiMax).coerceIn(0f, 1f)
                         },
                         modifier = Modifier
                             .width(180.dp)
@@ -198,29 +211,48 @@ fun CombateScreen(
                         trackColor = Color.DarkGray
                     )
                 }
+            }
 
-                // Caixa de Log de Combate
-                Surface(
+            // Caixa de Log de Combate (Posicionada corretamente na parte inferior)
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp),
+                color = Color.Black.copy(alpha = 0.7f),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(70.dp),
-                    color = Color.Black.copy(alpha = 0.7f),
-                    shape = RoundedCornerShape(12.dp)
+                        .fillMaxSize()
+                        .padding(12.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = uiState.logCombate,
-                            color = Color(0xFFE2E8F0),
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 2
-                        )
-                    }
+                    Text(
+                        text = uiState.logCombate,
+                        color = Color(0xFFE2E8F0),
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2
+                    )
                 }
+            }
+            Button(
+                onClick = onGolpeEspecial, // Certifique-se de passar a função do ViewModel ou chamá-la via parâmetro da tela
+                enabled = uiState.podeAtacarEspecial,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF9800),
+                    disabledContainerColor = Color.Gray
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = if (uiState.podeAtacarEspecial) "⚡ GOLPE FÚRIA (Crítico)" else "⏳ Recarregando Habilidade...",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
             }
         }
     }

@@ -53,7 +53,6 @@ class CombateViewModel(
         }
     }
 
-    // Explicação detalhada abaixo sobre este loop
     private fun iniciarLoopCombate() {
         jobCombate?.cancel()
         jobCombate = viewModelScope.launch {
@@ -65,45 +64,77 @@ class CombateViewModel(
                 val danoPorGolpe = (dps / 2f).coerceAtLeast(1f)
                 var novaVidaMonstro = currentState.vidaMonstroAtual - danoPorGolpe
 
-                // Ativa a animação de ataque
+                // Animação de ataque do herói
                 _uiState.update { it.copy(animarAtaqueHeroi = true, logCombate = "Herói causou ${danoPorGolpe.toInt()} de dano em ${it.nomeMonstro}") }
 
                 delay(100)
                 _uiState.update { it.copy(animarAtaqueHeroi = false) }
 
-                // Se o monstro morreu
+                // Se o monstro foi derrotado
                 if (novaVidaMonstro <= 0f) {
-                    ganharOuro(50)
-                    val proximoNome = if (currentState.nomeMonstro == "Dragão de Cristal") "Rei Goblin Corrompido" else "Dragão de Cristal"
-                    _uiState.update {
-                        it.copy(
-                            logCombate = "🎉 ${currentState.nomeMonstro} foi derrotado! +50 de Ouro.",
-                            vidaMonstroAtual = it.vidaMonstroMax + 50f,
-                            nomeMonstro = proximoNome
-                        )
+                    val novosMonstrosDerrotados = currentState.monstrosDerrotadosNaFase + 1
+                    val recompensaOuro = 50 * currentState.faseAtual
+                    ganharOuro(recompensaOuro)
+
+                    if (novosMonstrosDerrotados >= currentState.monstrosNecessariosParaProximaFase) {
+                        // Avança de fase
+                        val proximaFase = currentState.faseAtual + 1
+                        val novaVidaMax = 200f + (proximaFase * 50f)
+                        val proximoNome = obterNomeMonstroPorFase(proximaFase)
+
+                        _uiState.update {
+                            it.copy(
+                                faseAtual = proximaFase,
+                                monstrosDerrotadosNaFase = 0,
+                                nomeMonstro = proximoNome,
+                                vidaMonstroMax = novaVidaMax,
+                                vidaMonstroAtual = novaVidaMax,
+                                logCombate = "🏆 Fase ${currentState.faseAtual} concluída! Bem-vindo à Fase $proximaFase!"
+                            )
+                        }
+                    } else {
+                        // Apenas troca de monstro na mesma fase
+                        val proximoNome = if (currentState.nomeMonstro == "Dragão de Cristal") "Rei Goblin Corrompido" else "Dragão de Cristal"
+                        val vidaMaxAtual = currentState.vidaMonstroMax
+                        _uiState.update {
+                            it.copy(
+                                monstrosDerrotadosNaFase = novosMonstrosDerrotados,
+                                logCombate = "🎉 ${currentState.nomeMonstro} derrotado! +$recompensaOuro de Ouro ($novosMonstrosDerrotados/${currentState.monstrosNecessariosParaProximaFase})",
+                                vidaMonstroAtual = vidaMaxAtual,
+                                nomeMonstro = proximoNome
+                            )
+                        }
                     }
                     delay(1000)
-                    novaVidaMonstro = _uiState.value.vidaMonstroMax
                 } else {
                     _uiState.update { it.copy(vidaMonstroAtual = novaVidaMonstro) }
                 }
 
                 delay(600)
                 // Dano do monstro no herói
-                val novaVidaHeroi = _uiState.value.vidaHeroiAtual - 5f
+                val novaVidaHeroi = _uiState.value.vidaHeroiAtual - (5f * currentState.faseAtual)
                 if (novaVidaHeroi <= 0f) {
                     _uiState.update {
                         it.copy(
-                            logCombate = "⚠️ Herói foi derrotado! Recomeçando...",
+                            logCombate = "⚠️ Herói foi derrotado na Fase ${currentState.faseAtual}! Recomeçando...",
                             vidaHeroiAtual = it.vidaHeroiMax
                         )
                     }
-                    perderOuro(20)
+                    perderOuro(150)
                     delay(1500)
                 } else {
                     _uiState.update { it.copy(vidaHeroiAtual = novaVidaHeroi) }
                 }
             }
+        }
+    }
+
+    // Função auxiliar para definir monstros diferentes conforme a fase avança
+    private fun obterNomeMonstroPorFase(fase: Int): String {
+        return when (fase % 3) {
+            1 -> "Dragão de Cristal"
+            2 -> "Rei Goblin Corrompido"
+            else -> "Chefão Titã das Sombras"
         }
     }
 
@@ -122,6 +153,28 @@ class CombateViewModel(
     fun equiparSkin(novaSkin: String) {
         _uiState.update { it.copy(skinEquipada = novaSkin) }
         persistir() // Salva automaticamente no banco de dados Room
+    }
+
+    fun desferirGolpeEspecial() {
+        val currentState = _uiState.value
+        if (!currentState.podeAtacarEspecial) return
+
+        val danoEspecial = currentState.dano * 2 // Causa 2x o dano atual
+        val novaVidaMonstro = currentState.vidaMonstroAtual - danoEspecial
+
+        _uiState.update {
+            it.copy(
+                vidaMonstroAtual = novaVidaMonstro.coerceAtLeast(0f),
+                logCombate = "⚡ GOLPE FÚRIA! Herói causou $danoEspecial de dano crítico!",
+                podeAtacarEspecial = false
+            )
+        }
+
+        // Cooldown de 5 segundos para usar o especial novamente
+        viewModelScope.launch {
+            delay(5000)
+            _uiState.update { it.copy(podeAtacarEspecial = true) }
+        }
     }
 
     private fun persistir() {
