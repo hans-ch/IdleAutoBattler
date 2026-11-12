@@ -2,6 +2,7 @@ package com.example.idleautobattler.telas.combate
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,233 +28,294 @@ fun CombateScreen(
     onPerderOuro: (Int) -> Unit = {},
     onGolpeEspecial: () -> Unit = {}
 ) {
-    // Define as cores de fundo com base na fase atual
-    val coresFundo = when (uiState.faseAtual % 3) {
-        1 -> listOf(Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460)) // Caverna de Cristal (Azul)
-        2 -> listOf(Color(0xFF1B3B2B), Color(0xFF11261B), Color(0xFF09140E)) // Floresta Sombria (Verde)
-        else -> listOf(Color(0xFF3E1A1A), Color(0xFF2E1616), Color(0xFF1A0F0F)) // Castelo Vulcânico (Vermelho/Escuro)
+    // Cores de ambiente modernas por fase
+    val (corPrincipal, corSecundaria, corIluminacao) = when (uiState.faseAtual % 3) {
+        1 -> Triple(Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF38BDF8)) // Caverna Néon / Ciano
+        2 -> Triple(Color(0xFF064E3B), Color(0xFF022C22), Color(0xFF34D399)) // Floresta Sombria / Esmeralda
+        else -> Triple(Color(0xFF450A0A), Color(0xFF18181B), Color(0xFFF87171)) // Vulcão / Carmim
     }
 
+    // Animação de pulsar do brilho de fundo
+    val infiniteTransition = rememberInfiniteTransition(label = "brilho")
+    val alphaBrilho by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alphaBrilho"
+    )
+
+    // Animações de escala para o Herói e para o Monstro
     val escalaHeroi by animateFloatAsState(
-        targetValue = if (uiState.animarAtaqueHeroi) 1.2f else 1.0f,
+        targetValue = if (uiState.animarAtaqueHeroi) 1.25f else 1.0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "escalaHeroi"
+    )
+    val escalaMonstro by animateFloatAsState(
+        targetValue = if (uiState.animarAtaqueMonstro) 1.25f else 1.0f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "escalaMonstro"
+    )
+    // Animação de morte / desaparecimento do herói
+    val alphaHeroi by animateFloatAsState(
+        targetValue = if (uiState.vidaHeroiAtual <= 0f) 0.2f else 1.0f,
+        animationSpec = tween(500),
+        label = "alphaHeroi"
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(colors = coresFundo)
+                Brush.verticalGradient(
+                    colors = listOf(corPrincipal, corSecundaria, Color.Black)
+                )
             )
-            .padding(16.dp)
     ) {
-        // Coluna principal para organizar o topo, o centro e o rodapé perfeitamente
+        // --- 1. ILUMINAÇÃO DE FUNDO (Luz Ambiental no Centro) ---
+        Box(
+            modifier = Modifier
+                .size(320.dp)
+                .align(Alignment.Center)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            corIluminacao.copy(alpha = alphaBrilho),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
+        // --- 2. CONTEÚDO DA TELA ---
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Barra superior com Ouro, Fase e DPS
+            // HUD Superior (Vidro Flutuante com Bordas Iluminadas)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp),
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Card de Ouro
                 Surface(
-                    color = Color.Black.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(16.dp)
+                    color = Color.Black.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = "Ouro",
-                            tint = Color(0xFFFFD700)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${uiState.ouro}",
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleMedium
-                        )
+                        Icon(Icons.Default.Star, contentDescription = "Ouro", tint = Color(0xFFFFD700))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("${uiState.ouro}", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
 
-                // Indicador de Fase Atual
+                // Indicador de Fase
                 Surface(
-                    color = Color.Black.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(16.dp)
+                    color = corIluminacao.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.border(1.dp, corIluminacao.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                 ) {
                     Text(
                         text = "Fase ${uiState.faseAtual} (${uiState.monstrosDerrotadosNaFase}/${uiState.monstrosNecessariosParaProximaFase})",
-                        color = Color(0xFFFFD700),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
 
+                // Card de DPS
                 Surface(
-                    color = Color.Black.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(16.dp)
+                    color = Color.Black.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                 ) {
                     Text(
-                        text = "DPS: ${uiState.dano}/s",
-                        color = Color(0xFF00FFCC),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        text = "${uiState.dano} DPS",
+                        color = Color(0xFF38BDF8),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                     )
                 }
             }
 
-            // Área central: Monstro, VS e Herói
+            // --- 3. CAMPO DE BATALHA (MONSTRO VS HERÓI) ---
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Seção do Monstro
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(90.dp)
-                            .clip(CircleShape)
-                            .background(Color.Red.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val emojiMonstro = when (uiState.nomeMonstro) {
-                            "Dragão de Cristal" -> "🐉"
-                            "Rei Goblin Corrompido" -> "👺"
-                            "Esqueleto Guerreiro" -> "💀"
-                            "Golem de Pedra" -> "🗿"
-                            else -> "👾"
-                        }
-
-                        Text(
-                            text = emojiMonstro,
-                            fontSize = 42.sp
+                // ARENA MONSTRO (Com animação de ataque aplicada)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.scale(escalaMonstro)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        // Sombra de Chão
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp, 30.dp)
+                                .offset(y = 40.dp)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
+                                    )
+                                )
                         )
+                        // Aura Vermelha do Monstro
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFEF4444).copy(alpha = 0.2f))
+                                .border(1.5.dp, Color(0xFFEF4444).copy(alpha = 0.4f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val emojiMonstro = when (uiState.nomeMonstro) {
+                                "Dragão de Cristal" -> "🐉"
+                                "Rei Goblin Corrompido" -> "👺"
+                                "Esqueleto Guerreiro" -> "💀"
+                                "Golem de Pedra" -> "🗿"
+                                else -> "👾"
+                            }
+                            Text(text = emojiMonstro, fontSize = 48.sp)
+                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = uiState.nomeMonstro, color = Color.White, style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(text = uiState.nomeMonstro, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     val vidaMonstroTotalMax = uiState.vidaMonstroMax + 50f
                     LinearProgressIndicator(
                         progress = { (uiState.vidaMonstroAtual / vidaMonstroTotalMax).coerceIn(0f, 1f) },
                         modifier = Modifier
                             .width(220.dp)
-                            .height(12.dp)
-                            .clip(RoundedCornerShape(6.dp)),
-                        color = Color(0xFFFF416C),
-                        trackColor = Color.DarkGray
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "${uiState.vidaMonstroAtual.toInt()} / ${vidaMonstroTotalMax.toInt()}",
-                        color = Color.LightGray,
-                        fontSize = 12.sp
-                    )
-                }
-
-                Text(
-                    text = "⚔️ VS ⚔️",
-                    color = Color(0xFFFFD700),
-                    fontSize = 20.sp,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
-                // Seção do Herói
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.scale(escalaHeroi)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(90.dp)
-                            .clip(CircleShape)
-                            .background(Color.Blue.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val emojiSkin = when (uiState.skinEquipada) {
-                            "Mago de Fogo" -> "🧙‍♂️"
-                            "Ninja das Sombras" -> "🥷"
-                            "Cyborg RPG" -> "🤖"
-                            "Matador de Dragões" -> "🐲"
-                            "Rei Supremo" -> "👑"
-                            else -> "🗡️"
-                        }
-
-                        Text(
-                            text = emojiSkin,
-                            fontSize = 42.sp
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Herói (${uiState.skinEquipada})",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    LinearProgressIndicator(
-                        progress = {
-                            (uiState.vidaHeroiAtual / uiState.vidaHeroiMax).coerceIn(0f, 1f)
-                        },
-                        modifier = Modifier
-                            .width(180.dp)
                             .height(10.dp)
                             .clip(RoundedCornerShape(5.dp)),
-                        color = Color(0xFF00B4DB),
-                        trackColor = Color.DarkGray
+                        color = Color(0xFFF43F5E),
+                        trackColor = Color.Black.copy(alpha = 0.5f)
+                    )
+                }
+
+                // VS Divisor com efeito Neon
+                Text(
+                    text = "⚔️",
+                    fontSize = 26.sp,
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
+
+                // ARENA HERÓI (Com animação de ataque aplicada)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.scale(escalaHeroi).graphicsLayer(alpha = alphaHeroi)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        // Sombra de Chão para o Herói
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp, 30.dp)
+                                .offset(y = 40.dp)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
+                                    )
+                                )
+                        )
+                        // Aura Azul/Neon do Herói
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .background(corIluminacao.copy(alpha = 0.25f))
+                                .border(2.dp, corIluminacao.copy(alpha = 0.6f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val emojiSkin = when (uiState.skinEquipada) {
+                                "Mago de Fogo" -> "🧙‍♂️"
+                                "Ninja das Sombras" -> "🥷"
+                                "Cyborg RPG" -> "🤖"
+                                "Matador de Dragões" -> "🐲"
+                                "Rei Supremo" -> "👑"
+                                else -> "🗡️"
+                            }
+                            Text(text = emojiSkin, fontSize = 48.sp)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(text = uiState.skinEquipada, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    LinearProgressIndicator(
+                        progress = { (uiState.vidaHeroiAtual / uiState.vidaHeroiMax).coerceIn(0f, 1f) },
+                        modifier = Modifier
+                            .width(200.dp)
+                            .height(10.dp)
+                            .clip(RoundedCornerShape(5.dp)),
+                        color = Color(0xFF0EA5E9),
+                        trackColor = Color.Black.copy(alpha = 0.5f)
                     )
                 }
             }
 
-            // Caixa de Log de Combate (Posicionada corretamente na parte inferior)
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp),
-                color = Color.Black.copy(alpha = 0.7f),
-                shape = RoundedCornerShape(12.dp)
+            // --- 4. CONTROLES E LOG (RODAPÉ) ---
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Box(
+                // Caixa de Log em Glassmorphism
+                Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(14.dp)),
+                    color = Color.Black.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = uiState.logCombate,
+                            color = Color(0xFFE2E8F0),
+                            fontSize = 13.sp,
+                            maxLines = 2
+                        )
+                    }
+                }
+
+                // Botão Golpe Fúria Moderno
+                Button(
+                    onClick = onGolpeEspecial,
+                    enabled = uiState.podeAtacarEspecial,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFF59E0B),
+                        disabledContainerColor = Color(0xFF334155)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
-                        text = uiState.logCombate,
-                        color = Color(0xFFE2E8F0),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2
+                        text = if (uiState.podeAtacarEspecial) "⚡ GOLPE FÚRIA" else "⏳ RECARREGANDO HABILIDADE...",
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 14.sp
                     )
                 }
-            }
-            Button(
-                onClick = onGolpeEspecial, // Certifique-se de passar a função do ViewModel ou chamá-la via parâmetro da tela
-                enabled = uiState.podeAtacarEspecial,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFF9800),
-                    disabledContainerColor = Color.Gray
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = if (uiState.podeAtacarEspecial) "⚡ GOLPE FÚRIA (Crítico)" else "⏳ Recarregando Habilidade...",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
-                )
             }
         }
     }

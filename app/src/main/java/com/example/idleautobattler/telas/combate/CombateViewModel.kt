@@ -111,17 +111,27 @@ class CombateViewModel(
                 }
 
                 delay(600)
-                // Dano do monstro no herói
-                val novaVidaHeroi = _uiState.value.vidaHeroiAtual - (5f * currentState.faseAtual)
+                // Dano do monstro no herói com animação de ataque
+                _uiState.update { it.copy(animarAtaqueMonstro = true) }
+                delay(150) // Duração rápida da animação do monstro
+                _uiState.update { it.copy(animarAtaqueMonstro = false) }
+
+                val danoMonstro = 5f * currentState.faseAtual
+                val novaVidaHeroi = _uiState.value.vidaHeroiAtual - danoMonstro
+
                 if (novaVidaHeroi <= 0f) {
+                    // O Herói morreu: penalidade de ouro e restauração da vida, mantendo a fase atual!
+                    perderOuro(500)
+
                     _uiState.update {
                         it.copy(
-                            logCombate = "⚠️ Herói foi derrotado na Fase ${currentState.faseAtual}! Recomeçando...",
-                            vidaHeroiAtual = it.vidaHeroiMax
+                            logCombate = "⚠️ Herói foi derrotado na Fase ${currentState.faseAtual}! Revivendo...",
+                            vidaHeroiAtual = it.vidaHeroiMax,
+                            // Opcional: Se quiser que o monstro recupere toda a vida ao matar o herói:
+                            vidaMonstroAtual = it.vidaMonstroMax
                         )
                     }
-                    perderOuro(150)
-                    delay(1500)
+                    delay(1500) // Pausa para o jogador ler o log antes de continuar
                 } else {
                     _uiState.update { it.copy(vidaHeroiAtual = novaVidaHeroi) }
                 }
