@@ -6,7 +6,7 @@ import androidx.room3.PrimaryKey
 @Entity(tableName = "progresso")
 data class ProgressoEntity(
     @PrimaryKey val id: Int = 1,
-    val ouro: Int = 1250,
+    val ouro: Int = 100,
     val dano: Int = 15,
     val vidaAtual: Int = 100,
     val vidaMaxima: Int = 100,

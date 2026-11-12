@@ -73,7 +73,7 @@ class CombateViewModel(
                 // Se o monstro foi derrotado
                 if (novaVidaMonstro <= 0f) {
                     val novosMonstrosDerrotados = currentState.monstrosDerrotadosNaFase + 1
-                    val recompensaOuro = 50 * currentState.faseAtual
+                    val recompensaOuro = 100 * currentState.faseAtual
                     ganharOuro(recompensaOuro)
 
                     if (novosMonstrosDerrotados >= currentState.monstrosNecessariosParaProximaFase) {
@@ -121,7 +121,7 @@ class CombateViewModel(
 
                 if (novaVidaHeroi <= 0f) {
                     // O Herói morreu: penalidade de ouro e restauração da vida, mantendo a fase atual!
-                    perderOuro(500)
+                    perderOuro(150)
 
                     _uiState.update {
                         it.copy(

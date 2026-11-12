@@ -1,7 +1,7 @@
 package com.example.idleautobattler.telas.combate
 
 data class CombateUiState(
-    val ouro: Int = 1250,
+    val ouro: Int = 100,
     val dano: Int = 15,
     val vidaHeroiAtual: Float = 100f,
     val vidaHeroiMax: Float = 100f,
