@@ -2,19 +2,49 @@ package com.example.idleautobattler.telas.perfil
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import com.example.idleautobattler.data.SkinEntity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,162 +54,345 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
+
+private val PerfilFundo = listOf(
+    Color(0xFF1A1A2E),
+    Color(0xFF16213E),
+    Color(0xFF0F3460)
+)
 
 @Composable
-fun PerfilScreen() {
-    val scrollState = rememberScrollState()
+fun PerfilScreen(
+    viewModel: PerfilViewModel,
+    nomeInicial: String = "Guerreiro"
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val mensagem by viewModel.mensagem.collectAsStateWithLifecycle()
+
+    var mostrarEdicaoNome by remember { mutableStateOf(false) }
+    var novoNome by remember(uiState.nome) {
+        mutableStateOf(uiState.nome)
+    }
+
+    LaunchedEffect(nomeInicial) {
+        viewModel.inicializar(nomeInicial)
+    }
+
+    LaunchedEffect(mensagem) {
+        if (mensagem != null) {
+            delay(2500)
+            viewModel.limparMensagem()
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
-                    )
-                )
-            )
-            .padding(16.dp)
+            .background(Brush.verticalGradient(PerfilFundo))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState),
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f)),
-                shape = RoundedCornerShape(16.dp)
+            PerfilCabecalho(
+                uiState = uiState,
+                onEditarNome = {
+                    novoNome = uiState.nome
+                    mostrarEdicaoNome = true
+                }
+            )
+
+            Text(
+                text = "Atributos principais",
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            CardSecao {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ItemAtributo(
+                        icon = Icons.Default.Star,
+                        nome = "Dano",
+                        valor = "${uiState.progresso?.dano ?: 15}",
+                        cor = Color(0xFFFF5722)
+                    )
+                    ItemAtributo(
+                        icon = Icons.Default.Shield,
+                        nome = "Vida máxima",
+                        valor = "${uiState.progresso?.vidaMaxima ?: 100} HP",
+                        cor = Color(0xFF4CAF50)
+                    )
+                    ItemAtributo(
+                        icon = Icons.Default.MilitaryTech,
+                        nome = "Nível do monstro",
+                        valor = "${uiState.progresso?.nivelMonstro ?: 1}",
+                        cor = Color(0xFF2196F3)
+                    )
+                    ItemAtributo(
+                        icon = Icons.Default.ThumbUp,
+                        nome = "Ouro disponível",
+                        valor = "${uiState.ouro}",
+                        cor = Color(0xFFFFD700)
+                    )
+                }
+            }
+
+            Text(
+                text = "Aparência e skins",
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            SeletorSkins(
+                skins = uiState.skins,
+                skinEquipada = uiState.skinEquipada,
+                ouro = uiState.ouro,
+                onSelecionarSkin = viewModel::comprarOuEquipar
+            )
+
+            Text(
+                text = "Estatísticas gerais",
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            CardSecao {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RowStat("Monstros derrotados", "1.420")
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
+                    RowStat("Ouro total coletado", "48.500")
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
+                    RowStat("Fase máxima alcançada", "Fase 35")
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.12f))
+                    RowStat("Prestígios realizados", "2")
+                }
+            }
+        }
+
+        mensagem?.let { texto ->
+            Snackbar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                Text(texto)
+            }
+        }
+    }
+
+    if (mostrarEdicaoNome) {
+        AlertDialog(
+            onDismissRequest = { mostrarEdicaoNome = false },
+            title = { Text("Editar nome") },
+            text = {
+                OutlinedTextField(
+                    value = novoNome,
+                    onValueChange = { novoNome = it },
+                    label = { Text("Nome do jogador") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.atualizarNome(novoNome)
+                        mostrarEdicaoNome = false
+                    }
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(Color(0xFF00B4DB), Color(0xFF0083B0))
-                                )
+                    Text("Salvar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { mostrarEdicaoNome = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun PerfilCabecalho(
+    uiState: PerfilUiState,
+    onEditarNome: () -> Unit
+) {
+    val xpAtual = 4500
+    val xpNecessario = 5000
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Black.copy(alpha = 0.48f)
+        ),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(76.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF00B4DB),
+                                Color(0xFF0083B0)
                             )
-                            .border(2.dp, Color(0xFFFFD700), CircleShape),
-                        contentAlignment = Alignment.Center
+                        )
+                    )
+                    .border(2.dp, Color(0xFFFFD700), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = uiState.skinEquipada?.iconeEmoji ?: "🗡️",
+                    fontSize = 36.sp
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = uiState.nome,
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    TextButton(
+                        onClick = onEditarNome,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Avatar",
-                            modifier = Modifier.size(64.dp),
-                            tint = Color.White
-                        )
+                        Text("Editar")
                     }
+                }
 
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Skin: ${uiState.skinEquipada?.nome ?: "Herói Padrão"}",
+                    color = Color(0xFFFFD700),
+                    fontSize = 13.sp
+                )
+
+                Text(
+                    text = "Ouro: ${uiState.ouro}",
+                    color = Color(0xFFFFE082),
+                    fontSize = 13.sp
+                )
+
+                Text(
+                    text = "Nível 15",
+                    color = Color.LightGray,
+                    fontSize = 12.sp
+                )
+
+                LinearProgressIndicator(
+                    progress = { xpAtual.toFloat() / xpNecessario },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(7.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = Color(0xFF00FFCC),
+                    trackColor = Color.Gray.copy(alpha = 0.3f)
+                )
+
+                Text(
+                    text = "XP: $xpAtual / $xpNecessario",
+                    color = Color.LightGray,
+                    fontSize = 11.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SeletorSkins(
+    skins: List<SkinEntity>,
+    skinEquipada: SkinEntity?,
+    ouro: Int,
+    onSelecionarSkin: (SkinEntity) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(vertical = 2.dp)
+    ) {
+        items(
+            items = skins,
+            key = { skin -> skin.id }
+        ) { skin ->
+            val equipada = skin.id == skinEquipada?.id
+            val podeComprar = ouro >= skin.precoOuro
+
+            Card(
+                modifier = Modifier.width(150.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (equipada) {
+                        Color(0xFF174A48)
+                    } else {
+                        Color.Black.copy(alpha = 0.48f)
+                    }
+                ),
+                border = if (equipada) {
+                    androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        Color(0xFF00FFCC)
+                    )
+                } else {
+                    null
+                },
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = skin.iconeEmoji,
+                        fontSize = 30.sp
+                    )
+
+                    Text(
+                        text = skin.nome,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = skin.raritade,
+                        color = corRaridadePerfil(skin.raritade),
+                        fontSize = 12.sp
+                    )
+
+                    Button(
+                        onClick = { onSelecionarSkin(skin) },
+                        enabled = !equipada && (skin.desbloqueada || podeComprar),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text(
-                            text = "Guerreiro Lendário",
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Nível 15 • Cavaleiro de Elite",
-                            color = Color(0xFFFFD700),
-                            fontSize = 14.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("XP", color = Color.LightGray, fontSize = 11.sp)
-                                Text("4.500 / 5.000", color = Color.LightGray, fontSize = 11.sp)
+                            text = when {
+                                equipada -> "Equipada"
+                                skin.desbloqueada -> "Equipar"
+                                else -> "${skin.precoOuro} ouro"
                             }
-                            LinearProgressIndicator(
-                                progress = { 4500f / 5000f },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(4.dp)),
-                                color = Color(0xFF00FFCC),
-                                trackColor = Color.Gray.copy(alpha = 0.3f)
-                            )
-                        }
+                        )
                     }
-                }
-            }
-
-            Text(
-                text = "⚔️ Atributos Principais",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.4f)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    ItemAtributo(icon = Icons.Default.Star, nome = "Dano por Segundo (DPS)", valor = "150 DPS", cor = Color(0xFFFF5722))
-                    ItemAtributo(icon = Icons.Default.Shield, nome = "Vida Máxima", valor = "1.200 HP", cor = Color(0xFF4CAF50))
-                    ItemAtributo(icon = Icons.Default.MilitaryTech, nome = "Defesa Armor", valor = "45 Armadura", cor = Color(0xFF2196F3))
-                    ItemAtributo(icon = Icons.Default.ThumbUp, nome = "Bônus de Ouro", valor = "+25%", cor = Color(0xFFFFD700))
-                }
-            }
-
-            Text(
-                text = "🛡️ Equipamentos Equipados",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                SlotEquipamento(nome = "Arma", item = "Espada de Fogo", raridade = "Lendário", corRaridade = Color(0xFFFF9800))
-                SlotEquipamento(nome = "Armadura", item = "Peitoral de Aço", raridade = "Raro", corRaridade = Color(0xFF2196F3))
-                SlotEquipamento(nome = "Elmo", item = "Capacete de Ferro", raridade = "Comum", corRaridade = Color.Gray)
-            }
-
-            Text(
-                text = "📊 Estatísticas Gerais",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.4f)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RowStat(label = "Monstros Derrotados", valor = "1.420")
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-                    RowStat(label = "Ouro Total Coletado", valor = "48.500")
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-                    RowStat(label = "Fase Máxima Alcançada", valor = "Fase 35")
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-                    RowStat(label = "Prestígios Realizados", valor = "2 vezes")
                 }
             }
         }
@@ -187,7 +400,30 @@ fun PerfilScreen() {
 }
 
 @Composable
-private fun ItemAtributo(icon: ImageVector, nome: String, valor: String, cor: Color) {
+private fun CardSecao(
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Black.copy(alpha = 0.4f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            content = content
+        )
+    }
+}
+
+@Composable
+private fun ItemAtributo(
+    icon: ImageVector,
+    nome: String,
+    valor: String,
+    cor: Color
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -197,54 +433,57 @@ private fun ItemAtributo(icon: ImageVector, nome: String, valor: String, cor: Co
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = cor, modifier = Modifier.size(20.dp))
-            Text(text = nome, color = Color.White, fontSize = 14.sp)
+            androidx.compose.material3.Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = cor,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Text(
+                text = nome,
+                color = Color.White,
+                fontSize = 14.sp
+            )
         }
-        Text(text = valor, color = cor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+
+        Text(
+            text = valor,
+            color = cor,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
     }
 }
 
 @Composable
-private fun RowStat(label: String, valor: String) {
+private fun RowStat(
+    label: String,
+    valor: String
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, color = Color.LightGray, fontSize = 13.sp)
-        Text(text = valor, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+        Text(
+            text = label,
+            color = Color.LightGray,
+            fontSize = 13.sp
+        )
+
+        Text(
+            text = valor,
+            color = Color.White,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp
+        )
     }
 }
 
-@Composable
-private fun SlotEquipamento(nome: String, item: String, raridade: String, corRaridade: Color) {
-    Card(
-        modifier = Modifier
-            .width(105.dp)
-            .height(110.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f)),
-        shape = RoundedCornerShape(10.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = nome, color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            Text(text = item, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-            Surface(
-                color = corRaridade.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Text(
-                    text = raridade,
-                    color = corRaridade,
-                    fontSize = 10.sp,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
+private fun corRaridadePerfil(raridade: String): Color =
+    when (raridade.lowercase()) {
+        "lendária", "lendario" -> Color(0xFFFF9800)
+        "rara" -> Color(0xFF2196F3)
+        "épica", "epica" -> Color(0xFFAB47BC)
+        else -> Color.Gray
     }
-}

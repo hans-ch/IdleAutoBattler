@@ -8,13 +8,23 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.SportsEsports
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -31,16 +41,23 @@ import com.example.idleautobattler.telas.configuracoes.ConfiguracoesScreen
 import com.example.idleautobattler.telas.login.LoginScreen
 import com.example.idleautobattler.telas.loja.LojaScreen
 import com.example.idleautobattler.telas.loja.LojaViewModel
+import com.example.idleautobattler.telas.perfil.PerfilRepository
 import com.example.idleautobattler.telas.perfil.PerfilScreen
+import com.example.idleautobattler.telas.perfil.PerfilViewModel
 import com.example.idleautobattler.telas.perfil.SelecaoSkinsScreen
 
-sealed class Tela(val rota: String, val titulo: String, val icon: ImageVector) {
+sealed class Tela(
+    val rota: String,
+    val titulo: String,
+    val icon: ImageVector
+) {
     object Login : Tela("login", "Login", Icons.AutoMirrored.Filled.Login)
     object Combate : Tela("combate", "Combate", Icons.Default.SportsEsports)
     object Loja : Tela("loja", "Loja", Icons.Default.ShoppingCart)
     object Perfil : Tela("perfil", "Perfil", Icons.Default.Person)
     object Skins : Tela("skins", "Skins", Icons.Default.Palette)
-    object Configuracoes : Tela("configuracoes", "Configurações", Icons.Default.Settings)
+    object Configuracoes :
+        Tela("configuracoes", "Configurações", Icons.Default.Settings)
 }
 
 val telasBarraNavegacao = listOf(
@@ -56,8 +73,11 @@ fun NavegacaoPrincipal() {
     val context = LocalContext.current
     val navController = rememberNavController()
 
-    val database = remember { AppDatabase.getInstance(context) }
-    val repository = remember {
+    val database = remember {
+        AppDatabase.getInstance(context)
+    }
+
+    val jogoRepository = remember {
         JogoRepositoryImpl(
             progressoDao = database.progressoDao(),
             itemLojaDao = database.itemLojaDao(),
@@ -65,13 +85,44 @@ fun NavegacaoPrincipal() {
             apiService = RetrofitClient.apiService
         )
     }
-    val factory = remember { AppViewModelFactory(repository) }
 
-    val combateViewModel: CombateViewModel = viewModel(factory = factory)
-    val lojaViewModel: LojaViewModel = viewModel(factory = factory)
+    val jogoFactory = remember {
+        AppViewModelFactory(jogoRepository)
+    }
+
+    val perfilRepository = remember {
+        PerfilRepository(database)
+    }
+
+    val perfilFactory = remember(perfilRepository) {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(
+                modelClass: Class<T>
+            ): T {
+                if (modelClass.isAssignableFrom(PerfilViewModel::class.java)) {
+                    return PerfilViewModel(perfilRepository) as T
+                }
+
+                throw IllegalArgumentException(
+                    "ViewModel desconhecido: ${modelClass.name}"
+                )
+            }
+        }
+    }
+
+    val combateViewModel: CombateViewModel =
+        viewModel(factory = jogoFactory)
+
+    val lojaViewModel: LojaViewModel =
+        viewModel(factory = jogoFactory)
+
+    val perfilViewModel: PerfilViewModel =
+        viewModel(factory = perfilFactory)
 
     val combateState by combateViewModel.uiState.collectAsState()
     val lojaState by lojaViewModel.uiState.collectAsState()
+    val perfilState by perfilViewModel.uiState.collectAsState()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -86,8 +137,15 @@ fun NavegacaoPrincipal() {
                 ) {
                     telasBarraNavegacao.forEach { tela ->
                         NavigationBarItem(
-                            icon = { Icon(tela.icon, contentDescription = tela.titulo) },
-                            label = { Text(text = tela.titulo) },
+                            icon = {
+                                Icon(
+                                    imageVector = tela.icon,
+                                    contentDescription = tela.titulo
+                                )
+                            },
+                            label = {
+                                Text(text = tela.titulo)
+                            },
                             selected = currentRoute == tela.rota,
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color(0xFF00FFCC),
@@ -99,7 +157,10 @@ fun NavegacaoPrincipal() {
                             onClick = {
                                 if (currentRoute != tela.rota) {
                                     navController.navigate(tela.rota) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
+                                        popUpTo(
+                                            navController.graph
+                                                .findStartDestination().id
+                                        ) {
                                             saveState = true
                                         }
                                         launchSingleTop = true
@@ -120,9 +181,13 @@ fun NavegacaoPrincipal() {
         ) {
             composable(Tela.Login.rota) {
                 LoginScreen(
-                    onLoginSucesso = { _ ->
+                    onLoginSucesso = { nomeJogador ->
+                        perfilViewModel.inicializar(nomeJogador)
+
                         navController.navigate(Tela.Combate.rota) {
-                            popUpTo(Tela.Login.rota) { inclusive = true }
+                            popUpTo(Tela.Login.rota) {
+                                inclusive = true
+                            }
                         }
                     }
                 )
@@ -130,10 +195,16 @@ fun NavegacaoPrincipal() {
 
             composable(Tela.Combate.rota) {
                 CombateScreen(
-                    uiState = combateState, //// passando o estado completo gerado pelo ViewModel
-                    onGanharOuro = { combateViewModel.ganharOuro(it) },
-                    onPerderOuro = { combateViewModel.perderOuro(it) },
-                    onGolpeEspecial = {combateViewModel.desferirGolpeEspecial()}
+                    uiState = combateState,
+                    onGanharOuro = { quantidade ->
+                        combateViewModel.ganharOuro(quantidade)
+                    },
+                    onPerderOuro = { quantidade ->
+                        combateViewModel.perderOuro(quantidade)
+                    },
+                    onGolpeEspecial = {
+                        combateViewModel.desferirGolpeEspecial()
+                    }
                 )
             }
 
@@ -145,35 +216,56 @@ fun NavegacaoPrincipal() {
                     ehAdmin = lojaState.ehAdmin,
                     filtroAtual = lojaState.filtroTipo,
                     ordenarPorPreco = lojaState.ordenarPorPreco,
-                    onComprarUpgrade = { lojaViewModel.comprarUpgrade(it) },
-                    onDeletarItem = { lojaViewModel.deletarItem(it) },
-                    onCriarItem = { t, p, tipo, d -> lojaViewModel.criarNovoItem(t, p, tipo, d) },
-                    onAlterarFiltro = { lojaViewModel.alterarFiltro(it) },
-                    onAlternarOrdenacao = { lojaViewModel.alternarOrdenacao() }
+                    onComprarUpgrade = { item ->
+                        lojaViewModel.comprarUpgrade(item)
+                    },
+                    onDeletarItem = { item ->
+                        lojaViewModel.deletarItem(item)
+                    },
+                    onCriarItem = { titulo, preco, tipo, descricao ->
+                        lojaViewModel.criarNovoItem(
+                            titulo,
+                            preco,
+                            tipo,
+                            descricao
+                        )
+                    },
+                    onAlterarFiltro = { filtro ->
+                        lojaViewModel.alterarFiltro(filtro)
+                    },
+                    onAlternarOrdenacao = {
+                        lojaViewModel.alternarOrdenacao()
+                    }
                 )
             }
 
             composable(Tela.Perfil.rota) {
-                PerfilScreen()
+                PerfilScreen(
+                    viewModel = perfilViewModel,
+                    nomeInicial = perfilState.nome
+                )
             }
 
             composable(Tela.Skins.rota) {
                 SelecaoSkinsScreen(
-                    skinEquipadaAtual = combateState.skinEquipada,
-                    ouroDisponivel = combateState.ouro,
-                    onEquiparSkin = { skinNome ->
-                        combateViewModel.equiparSkin(skinNome)
-                    }
+                    skins = perfilState.skins,
+                    skinEquipadaAtual = perfilState.skinEquipada,
+                    ouroDisponivel = perfilState.ouro,
+                    onSelecionarSkin = perfilViewModel::comprarOuEquipar
                 )
             }
 
             composable(Tela.Configuracoes.rota) {
                 ConfiguracoesScreen(
                     ehAdmin = lojaState.ehAdmin,
-                    onAlternarAdmin = { lojaViewModel.alternarModoAdmin() },
+                    onAlternarAdmin = {
+                        lojaViewModel.alternarModoAdmin()
+                    },
                     onFazerLogout = {
                         navController.navigate(Tela.Login.rota) {
-                            popUpTo(0) { inclusive = true }
+                            popUpTo(0) {
+                                inclusive = true
+                            }
                         }
                     }
                 )
