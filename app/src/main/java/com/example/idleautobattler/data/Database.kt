@@ -8,8 +8,8 @@ import com.example.idleautobattler.telas.combate.ProgressoDao
 import com.example.idleautobattler.telas.combate.ProgressoEntity
 import com.example.idleautobattler.telas.loja.ItemLojaDao
 import com.example.idleautobattler.telas.loja.ItemLojaEntity
-import com.example.idleautobattler.telas.perfil.SkinDao
-import com.example.idleautobattler.telas.perfil.SkinEntity
+import com.example.idleautobattler.telas.skins.SkinDao
+import com.example.idleautobattler.telas.skins.SkinEntity
 
 @Database(
     entities = [

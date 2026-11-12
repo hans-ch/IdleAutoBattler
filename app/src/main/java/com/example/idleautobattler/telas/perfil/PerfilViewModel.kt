@@ -3,6 +3,7 @@ package com.example.idleautobattler.telas.perfil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.idleautobattler.telas.combate.ProgressoEntity
+import com.example.idleautobattler.telas.skins.SkinEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

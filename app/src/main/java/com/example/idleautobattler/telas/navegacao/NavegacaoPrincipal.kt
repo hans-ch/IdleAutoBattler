@@ -6,6 +6,8 @@ import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -42,9 +44,7 @@ import com.example.idleautobattler.telas.loja.LojaViewModel
 import com.example.idleautobattler.telas.perfil.PerfilRepository
 import com.example.idleautobattler.telas.perfil.PerfilScreen
 import com.example.idleautobattler.telas.perfil.PerfilViewModel
-import com.example.idleautobattler.telas.perfil.SelecaoSkinsScreen
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.SportsEsports
+import com.example.idleautobattler.telas.skins.SelecaoSkinsScreen
 
 sealed class Tela(
     val rota: String,

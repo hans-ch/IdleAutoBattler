@@ -1,4 +1,4 @@
-package com.example.idleautobattler.telas.perfil
+package com.example.idleautobattler.telas.skins
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

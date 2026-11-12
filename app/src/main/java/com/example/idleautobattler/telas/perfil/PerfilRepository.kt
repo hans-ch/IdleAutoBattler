@@ -2,6 +2,7 @@ package com.example.idleautobattler.telas.perfil
 
 import com.example.idleautobattler.data.AppDatabase
 import com.example.idleautobattler.telas.combate.ProgressoEntity
+import com.example.idleautobattler.telas.skins.SkinEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
