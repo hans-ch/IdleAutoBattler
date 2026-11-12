@@ -3,7 +3,13 @@ package com.example.idleautobattler.data
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.idleautobattler.telas.combate.CombateViewModel
+import com.example.idleautobattler.telas.combate.ProgressoDao
+import com.example.idleautobattler.telas.combate.ProgressoEntity
+import com.example.idleautobattler.telas.loja.ItemLojaDao
+import com.example.idleautobattler.telas.loja.ItemLojaEntity
 import com.example.idleautobattler.telas.loja.LojaViewModel
+import com.example.idleautobattler.telas.perfil.SkinDao
+import com.example.idleautobattler.telas.perfil.SkinEntity
 import kotlinx.coroutines.flow.Flow
 
 interface JogoRepository {

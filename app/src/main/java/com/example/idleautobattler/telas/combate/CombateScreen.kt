@@ -101,51 +101,53 @@ fun CombateScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Card de Ouro
                 Surface(
                     color = Color.Black.copy(alpha = 0.4f),
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Star, contentDescription = "Ouro", tint = Color(0xFFFFD700))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("${uiState.ouro}", color = Color.White, fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.Star, contentDescription = "Ouro", tint = Color(0xFFFFD700), modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("${uiState.ouro}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
 
                 // Indicador de Fase
                 Surface(
                     color = corIluminacao.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.border(1.dp, corIluminacao.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.border(1.dp, corIluminacao.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                 ) {
                     Text(
                         text = "Fase ${uiState.faseAtual} (${uiState.monstrosDerrotadosNaFase}/${uiState.monstrosNecessariosParaProximaFase})",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
 
                 // Card de DPS
                 Surface(
                     color = Color.Black.copy(alpha = 0.4f),
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
                 ) {
                     Text(
                         text = "${uiState.dano} DPS",
                         color = Color(0xFF38BDF8),
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
             }

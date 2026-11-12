@@ -1,7 +1,7 @@
 package com.example.idleautobattler.telas.loja
 
-import androidx.room3.Entity
-import androidx.room3.PrimaryKey
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 @Entity(tableName = "itens_loja")
 data class ItemLojaEntity(
@@ -9,6 +9,6 @@ data class ItemLojaEntity(
     val titulo: String,
     val nivelAtual: Int,
     val precoAtual: Int,
-    val tipo: String, // "DANO", "VIDA_MAXIMA"
+    val tipo: String,
     val aumentoDano: Int = 5
 )

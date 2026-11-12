@@ -2,9 +2,8 @@ package com.example.idleautobattler.telas.loja
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.idleautobattler.data.ItemLojaEntity
 import com.example.idleautobattler.data.JogoRepository
-import com.example.idleautobattler.data.ProgressoEntity
+import com.example.idleautobattler.telas.combate.ProgressoEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,8 +34,7 @@ class LojaViewModel(
                         }
                     }
                 }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(mensagemErro = e.message) }
+            } catch (_: Exception) {
             }
         }
 
@@ -48,11 +46,10 @@ class LojaViewModel(
                         estaPopulandoIniciais = true
                         popularItensIniciais()
                     } else {
-                        aplicarFiltroEOrdenacao()
+                        aplicarFiltro()
                     }
                 }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(mensagemErro = e.message) }
+            } catch (_: Exception) {
             }
         }
     }
@@ -67,17 +64,11 @@ class LojaViewModel(
         itensIniciais.forEach { repository.adicionarItemLoja(it) }
     }
 
-    private fun aplicarFiltroEOrdenacao() {
+    private fun aplicarFiltro() {
         var lista = todosItensDoBanco
 
         if (_uiState.value.filtroTipo != "TODOS") {
             lista = lista.filter { item -> item.tipo == _uiState.value.filtroTipo }
-        }
-
-        if (_uiState.value.ordenarPorPreco) {
-            lista = lista.sortedBy { item -> item.precoAtual }
-        } else {
-            lista = lista.sortedByDescending { item -> item.nivelAtual }
         }
 
         _uiState.update { it.copy(itensExibidos = lista) }
@@ -85,12 +76,7 @@ class LojaViewModel(
 
     fun alterarFiltro(tipo: String) {
         _uiState.update { it.copy(filtroTipo = tipo) }
-        aplicarFiltroEOrdenacao()
-    }
-
-    fun alternarOrdenacao() {
-        _uiState.update { it.copy(ordenarPorPreco = !_uiState.value.ordenarPorPreco) }
-        aplicarFiltroEOrdenacao()
+        aplicarFiltro()
     }
 
     fun alternarModoAdmin() {
@@ -126,8 +112,6 @@ class LojaViewModel(
                     precoAtual = (item.precoAtual * 1.5).toInt() + 5
                 )
                 repository.atualizarItemLoja(itemAtualizado)
-            } else {
-                _uiState.update { it.copy(mensagemErro = "Ouro insuficiente!") }
             }
         }
     }

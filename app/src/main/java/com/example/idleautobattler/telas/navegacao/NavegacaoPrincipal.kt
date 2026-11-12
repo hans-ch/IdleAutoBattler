@@ -196,6 +196,7 @@ fun NavegacaoPrincipal() {
             composable(Tela.Combate.rota) {
                 CombateScreen(
                     uiState = combateState,
+<<<<<<< HEAD
                     onGanharOuro = { quantidade ->
                         combateViewModel.ganharOuro(quantidade)
                     },
@@ -205,6 +206,11 @@ fun NavegacaoPrincipal() {
                     onGolpeEspecial = {
                         combateViewModel.desferirGolpeEspecial()
                     }
+=======
+                    onGanharOuro = { combateViewModel.ganharOuro(it) },
+                    onPerderOuro = { combateViewModel.perderOuro(it) },
+                    onGolpeEspecial = { combateViewModel.desferirGolpeEspecial() }
+>>>>>>> ec9f63842de293f59d0ff08a1e0c1ef9e2844443
                 )
             }
 
@@ -215,6 +221,7 @@ fun NavegacaoPrincipal() {
                     itens = lojaState.itensExibidos,
                     ehAdmin = lojaState.ehAdmin,
                     filtroAtual = lojaState.filtroTipo,
+<<<<<<< HEAD
                     ordenarPorPreco = lojaState.ordenarPorPreco,
                     onComprarUpgrade = { item ->
                         lojaViewModel.comprarUpgrade(item)
@@ -236,6 +243,12 @@ fun NavegacaoPrincipal() {
                     onAlternarOrdenacao = {
                         lojaViewModel.alternarOrdenacao()
                     }
+=======
+                    onComprarUpgrade = { lojaViewModel.comprarUpgrade(it) },
+                    onDeletarItem = { lojaViewModel.deletarItem(it) },
+                    onCriarItem = { t, p, tipo, d -> lojaViewModel.criarNovoItem(t, p, tipo, d) },
+                    onAlterarFiltro = { lojaViewModel.alterarFiltro(it) }
+>>>>>>> ec9f63842de293f59d0ff08a1e0c1ef9e2844443
                 )
             }
 

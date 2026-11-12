@@ -1,6 +1,7 @@
 package com.example.idleautobattler.data
 
 import android.content.Context
+<<<<<<< HEAD
 import androidx.room3.Dao
 import androidx.room3.Database
 import androidx.room3.Delete
@@ -137,6 +138,18 @@ interface SkinDao {
     }
 }
 
+=======
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.idleautobattler.telas.combate.ProgressoDao
+import com.example.idleautobattler.telas.combate.ProgressoEntity
+import com.example.idleautobattler.telas.loja.ItemLojaDao
+import com.example.idleautobattler.telas.loja.ItemLojaEntity
+import com.example.idleautobattler.telas.perfil.SkinDao
+import com.example.idleautobattler.telas.perfil.SkinEntity
+
+>>>>>>> ec9f63842de293f59d0ff08a1e0c1ef9e2844443
 @Database(
     entities = [
         ProgressoEntity::class,
