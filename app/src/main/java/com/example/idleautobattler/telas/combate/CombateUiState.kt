@@ -7,7 +7,7 @@ data class CombateUiState(
     val vidaHeroiMax: Float = 100f,
     val vidaMonstroAtual: Float = 200f,
     val vidaMonstroMax: Float = 200f,
-    val nomeMonstro: String = "Dragão de Cristal",
+    val nomeMonstro: String = "Slime de Cristal",
     val logCombate: String = "A batalha automática começou!",
     val animarAtaqueMonstro: Boolean = false,
     val animarAtaqueHeroi: Boolean = false,

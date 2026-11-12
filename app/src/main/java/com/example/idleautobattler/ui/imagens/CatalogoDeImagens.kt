@@ -1,0 +1,45 @@
+package com.example.idleautobattler.ui.imagens
+
+import androidx.annotation.DrawableRes
+import com.example.idleautobattler.R
+
+/**
+ * Catalogo unico de arte do jogo.
+ *
+ * Ponto unico de verdade: o campo de batalha e a aba de skins leem daqui,
+ * evitando dois mapeamentos paralelos que podem divergir.
+ */
+object CatalogoDeImagens {
+
+    // --- Inimigos ---
+    @DrawableRes val monstroSlime = R.drawable.monstro_slime
+    @DrawableRes val monstroDiabrete = R.drawable.monstro_diabrete
+    @DrawableRes val monstroCaveira = R.drawable.monstro_caveira
+    @DrawableRes val monstroFantasma = R.drawable.monstro_fantasma
+
+    // --- Guerreiro / skins ---
+    @DrawableRes val guerreiro = R.drawable.guerreiro
+
+    /** Arte do monstro pelo nome usado no estado do combate. */
+    @DrawableRes
+    fun iconeDeMonstro(nome: String): Int = when (nome) {
+        "Slime de Cristal" -> monstroSlime
+        "Diabrete Corrompido" -> monstroDiabrete
+        "Rei Esqueleto" -> monstroCaveira
+        "Chefão Fantasma das Sombras" -> monstroFantasma
+        else -> monstroFantasma
+    }
+
+    /**
+     * Arte da skin equipada.
+     *
+     * Fase 1: apenas "Heroi Padrao" tem arte pronta.
+     * Fase 2: as demais entram aqui quando os PNGs chegarem.
+     * null = ainda sem arte, a UI usa o emoji como fallback.
+     */
+    @DrawableRes
+    fun iconeDeSkin(nome: String): Int? = when (nome) {
+        "Herói Padrão" -> guerreiro
+        else -> null
+    }
+}

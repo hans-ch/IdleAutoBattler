@@ -1,6 +1,7 @@
 package com.example.idleautobattler.telas.combate
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -17,9 +18,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.idleautobattler.ui.imagens.CatalogoDeImagens
 
 @Composable
 fun CombateScreen(
@@ -183,14 +187,14 @@ fun CombateScreen(
                                 .border(1.5.dp, Color(0xFFEF4444).copy(alpha = 0.4f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            val emojiMonstro = when (uiState.nomeMonstro) {
-                                "Dragão de Cristal" -> "🐉"
-                                "Rei Goblin Corrompido" -> "👺"
-                                "Esqueleto Guerreiro" -> "💀"
-                                "Golem de Pedra" -> "🗿"
-                                else -> "👾"
-                            }
-                            Text(text = emojiMonstro, fontSize = 48.sp)
+                            Image(
+                                painter = painterResource(
+                                    CatalogoDeImagens.iconeDeMonstro(uiState.nomeMonstro)
+                                ),
+                                contentDescription = uiState.nomeMonstro,
+                                modifier = Modifier.size(72.dp),
+                                contentScale = ContentScale.Fit
+                            )
                         }
                     }
 
@@ -243,15 +247,26 @@ fun CombateScreen(
                                 .border(2.dp, corIluminacao.copy(alpha = 0.6f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            val emojiSkin = when (uiState.skinEquipada) {
-                                "Mago de Fogo" -> "🧙‍♂️"
-                                "Ninja das Sombras" -> "🥷"
-                                "Cyborg RPG" -> "🤖"
-                                "Matador de Dragões" -> "🐲"
-                                "Rei Supremo" -> "👑"
-                                else -> "🗡️"
+                            val iconeSkin = CatalogoDeImagens.iconeDeSkin(uiState.skinEquipada)
+                            if (iconeSkin != null) {
+                                Image(
+                                    painter = painterResource(iconeSkin),
+                                    contentDescription = uiState.skinEquipada,
+                                    modifier = Modifier.size(72.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                            } else {
+                                // Fallback temporario: a arte das demais skins chega na Fase 2.
+                                val emojiSkin = when (uiState.skinEquipada) {
+                                    "Mago de Fogo" -> "🧙‍♂️"
+                                    "Ninja das Sombras" -> "🥷"
+                                    "Cyborg RPG" -> "🤖"
+                                    "Matador de Dragões" -> "🐲"
+                                    "Rei Supremo" -> "👑"
+                                    else -> "🗡️"
+                                }
+                                Text(text = emojiSkin, fontSize = 48.sp)
                             }
-                            Text(text = emojiSkin, fontSize = 48.sp)
                         }
                     }
 

@@ -99,7 +99,8 @@ class CombateViewModel(
                             )
                         }
                     } else {
-                        val proximoNome = if (currentState.nomeMonstro == "Dragão de Cristal") "Rei Goblin Corrompido" else "Dragão de Cristal"
+                        val roster = rosterDaFase(currentState.faseAtual)
+                        val proximoNome = roster[(roster.indexOf(currentState.nomeMonstro) + 1).mod(roster.size)]
                         val vidaMaxAtual = currentState.vidaMonstroMax
                         _uiState.update {
                             it.copy(
@@ -142,11 +143,17 @@ class CombateViewModel(
     }
 
     private fun obterNomeMonstroPorFase(fase: Int): String {
-        return when (fase % 3) {
-            1 -> "Dragão de Cristal"
-            2 -> "Rei Goblin Corrompido"
-            else -> "Chefão Titã das Sombras"
-        }
+        return rosterDaFase(fase).first()
+    }
+
+    /**
+     * Monstros que podem aparecer na fase: o primeiro é o chefe da fase
+     * e os demais entram na rotação quando ele é derrotado.
+     */
+    private fun rosterDaFase(fase: Int): List<String> = when (fase % 3) {
+        1 -> listOf("Slime de Cristal", "Rei Esqueleto")
+        2 -> listOf("Diabrete Corrompido", "Rei Esqueleto")
+        else -> listOf("Chefão Fantasma das Sombras", "Rei Esqueleto")
     }
 
     fun ganharOuro(valor: Int) {
