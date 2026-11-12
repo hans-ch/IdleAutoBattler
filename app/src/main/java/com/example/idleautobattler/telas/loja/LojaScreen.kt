@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
@@ -17,9 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.idleautobattler.data.ItemLojaEntity
 
 @Composable
 fun LojaScreen(
@@ -28,12 +27,10 @@ fun LojaScreen(
     itens: List<ItemLojaEntity> = emptyList(),
     ehAdmin: Boolean = false,
     filtroAtual: String = "TODOS",
-    ordenarPorPreco: Boolean = false,
     onComprarUpgrade: (ItemLojaEntity) -> Unit = {},
     onDeletarItem: (ItemLojaEntity) -> Unit = {},
     onCriarItem: (String, Int, String, Int) -> Unit = { _, _, _, _ -> },
-    onAlterarFiltro: (String) -> Unit = {},
-    onAlternarOrdenacao: () -> Unit = {}
+    onAlterarFiltro: (String) -> Unit = {}
 ) {
     var exibeDialogNovoItem by remember { mutableStateOf(false) }
     var novoTitulo by remember { mutableStateOf("") }
@@ -52,12 +49,13 @@ fun LojaScreen(
                     )
                 )
             )
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Header Superior
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -65,62 +63,73 @@ fun LojaScreen(
             ) {
                 Text(
                     text = "🛒 Loja de Upgrades",
-                    style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 if (ehAdmin) {
                     IconButton(
                         onClick = { exibeDialogNovoItem = true },
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFF00FFCC))
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFF00FFCC)),
+                        modifier = Modifier.size(36.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Novo Item", tint = Color.Black)
+                        Icon(Icons.Default.Add, contentDescription = "Novo Item", tint = Color.Black, modifier = Modifier.size(20.dp))
                     }
                 }
             }
 
+            // Card de Recursos (Ouro + Dano Atual)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f)),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Star, contentDescription = "Ouro", tint = Color(0xFFFFD700))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Icon(Icons.Default.Star, contentDescription = "Ouro", tint = Color(0xFFFFD700), modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "$ouro Ouro",
                             color = Color.White,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Surface(
                         color = Color(0xFF00FFCC).copy(alpha = 0.2f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Dano Atual: $danoAtual DPS",
+                            text = "Dano: $danoAtual DPS",
                             color = Color(0xFF00FFCC),
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
+                            fontSize = 12.sp,
+                            maxLines = 1
                         )
                     }
                 }
             }
 
+            // Filtros de Categoria
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -132,16 +141,9 @@ fun LojaScreen(
                         )
                     }
                 }
-
-                IconButton(onClick = onAlternarOrdenacao) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Sort,
-                        contentDescription = "Ordenar",
-                        tint = if (ordenarPorPreco) Color(0xFFFF9800) else Color.White
-                    )
-                }
             }
 
+            // Lista de Itens da Loja
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -154,44 +156,70 @@ fun LojaScreen(
                     ) {
                         Row(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .padding(12.dp)
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
                                 Text(
                                     text = item.titulo,
-                                    style = MaterialTheme.typography.titleMedium,
                                     color = Color.White,
-                                    fontWeight = FontWeight.Bold
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    lineHeight = 18.sp
                                 )
                                 Text(
                                     text = "Nível atual: ${item.nivelAtual}",
                                     color = Color(0xFF00FFCC),
-                                    style = MaterialTheme.typography.bodyMedium
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                val podeComprar = ouro >= item.precoAtual
                                 Button(
                                     onClick = { onComprarUpgrade(item) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-                                    shape = RoundedCornerShape(8.dp)
+                                    enabled = podeComprar,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFFF9800),
+                                        disabledContainerColor = Color(0xFF334155)
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.defaultMinSize(minHeight = 36.dp)
                                 ) {
                                     Text(
                                         text = "${item.precoAtual} Ouro",
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
+                                        color = if (podeComprar) Color.White else Color.LightGray,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        maxLines = 1
                                     )
                                 }
 
                                 if (ehAdmin) {
-                                    Spacer(modifier = Modifier.width(4.dp))
                                     IconButton(
-                                        onClick = { onDeletarItem(item) }
+                                        onClick = { onDeletarItem(item) },
+                                        modifier = Modifier.size(36.dp)
                                     ) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Deletar Item", tint = Color.Red)
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Deletar Item",
+                                            tint = Color(0xFFEF4444),
+                                            modifier = Modifier.size(20.dp)
+                                        )
                                     }
                                 }
                             }

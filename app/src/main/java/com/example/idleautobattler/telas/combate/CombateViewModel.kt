@@ -1,10 +1,8 @@
 package com.example.idleautobattler.telas.combate
 
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.idleautobattler.data.JogoRepository
-import com.example.idleautobattler.data.ProgressoEntity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +23,7 @@ class CombateViewModel(
 
     init {
         carregarDadosLocaisERemotos()
-        iniciarLoopCombate() // Inicia a batalha automática assim que o ViewModel é criado
+        iniciarLoopCombate()
     }
 
     private fun carregarDadosLocaisERemotos() {
@@ -62,22 +60,19 @@ class CombateViewModel(
                 val dps = currentState.dano
 
                 val danoPorGolpe = (dps / 2f).coerceAtLeast(1f)
-                var novaVidaMonstro = currentState.vidaMonstroAtual - danoPorGolpe
+                val novaVidaMonstro = currentState.vidaMonstroAtual - danoPorGolpe
 
-                // Animação de ataque do herói
                 _uiState.update { it.copy(animarAtaqueHeroi = true, logCombate = "Herói causou ${danoPorGolpe.toInt()} de dano em ${it.nomeMonstro}") }
 
                 delay(100)
                 _uiState.update { it.copy(animarAtaqueHeroi = false) }
 
-                // Se o monstro foi derrotado
                 if (novaVidaMonstro <= 0f) {
                     val novosMonstrosDerrotados = currentState.monstrosDerrotadosNaFase + 1
                     val recompensaOuro = 100 * currentState.faseAtual
                     ganharOuro(recompensaOuro)
 
                     if (novosMonstrosDerrotados >= currentState.monstrosNecessariosParaProximaFase) {
-                        // Avança de fase
                         val proximaFase = currentState.faseAtual + 1
                         val novaVidaMax = 200f + (proximaFase * 50f)
                         val proximoNome = obterNomeMonstroPorFase(proximaFase)
@@ -93,7 +88,6 @@ class CombateViewModel(
                             )
                         }
                     } else {
-                        // Apenas troca de monstro na mesma fase
                         val proximoNome = if (currentState.nomeMonstro == "Dragão de Cristal") "Rei Goblin Corrompido" else "Dragão de Cristal"
                         val vidaMaxAtual = currentState.vidaMonstroMax
                         _uiState.update {
@@ -111,27 +105,24 @@ class CombateViewModel(
                 }
 
                 delay(600)
-                // Dano do monstro no herói com animação de ataque
                 _uiState.update { it.copy(animarAtaqueMonstro = true) }
-                delay(150) // Duração rápida da animação do monstro
+                delay(150)
                 _uiState.update { it.copy(animarAtaqueMonstro = false) }
 
                 val danoMonstro = 5f * currentState.faseAtual
                 val novaVidaHeroi = _uiState.value.vidaHeroiAtual - danoMonstro
 
                 if (novaVidaHeroi <= 0f) {
-                    // O Herói morreu: penalidade de ouro e restauração da vida, mantendo a fase atual!
                     perderOuro(150)
 
                     _uiState.update {
                         it.copy(
                             logCombate = "⚠️ Herói foi derrotado na Fase ${currentState.faseAtual}! Revivendo...",
                             vidaHeroiAtual = it.vidaHeroiMax,
-                            // Opcional: Se quiser que o monstro recupere toda a vida ao matar o herói:
                             vidaMonstroAtual = it.vidaMonstroMax
                         )
                     }
-                    delay(1500) // Pausa para o jogador ler o log antes de continuar
+                    delay(1500)
                 } else {
                     _uiState.update { it.copy(vidaHeroiAtual = novaVidaHeroi) }
                 }
@@ -139,7 +130,6 @@ class CombateViewModel(
         }
     }
 
-    // Função auxiliar para definir monstros diferentes conforme a fase avança
     private fun obterNomeMonstroPorFase(fase: Int): String {
         return when (fase % 3) {
             1 -> "Dragão de Cristal"
@@ -162,14 +152,14 @@ class CombateViewModel(
 
     fun equiparSkin(novaSkin: String) {
         _uiState.update { it.copy(skinEquipada = novaSkin) }
-        persistir() // Salva automaticamente no banco de dados Room
+        persistir()
     }
 
     fun desferirGolpeEspecial() {
         val currentState = _uiState.value
         if (!currentState.podeAtacarEspecial) return
 
-        val danoEspecial = currentState.dano * 2 // Causa 2x o dano atual
+        val danoEspecial = currentState.dano * 2
         val novaVidaMonstro = currentState.vidaMonstroAtual - danoEspecial
 
         _uiState.update {
@@ -180,7 +170,6 @@ class CombateViewModel(
             )
         }
 
-        // Cooldown de 5 segundos para usar o especial novamente
         viewModelScope.launch {
             delay(5000)
             _uiState.update { it.copy(podeAtacarEspecial = true) }
