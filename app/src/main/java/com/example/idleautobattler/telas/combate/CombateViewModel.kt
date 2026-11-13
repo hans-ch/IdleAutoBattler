@@ -146,10 +146,6 @@ class CombateViewModel(
         return rosterDaFase(fase).first()
     }
 
-    /**
-     * Monstros que podem aparecer na fase: o primeiro é o chefe da fase
-     * e os demais entram na rotação quando ele é derrotado.
-     */
     private fun rosterDaFase(fase: Int): List<String> = when (fase % 3) {
         1 -> listOf("Slime de Cristal", "Rei Esqueleto")
         2 -> listOf("Diabrete Corrompido", "Rei Esqueleto")

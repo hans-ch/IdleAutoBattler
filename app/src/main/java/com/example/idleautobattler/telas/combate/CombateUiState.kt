@@ -14,12 +14,9 @@ data class CombateUiState(
     val eventoBonusTexto: String = "Bônus de Evento Ativo",
     val skinEquipada: String = "Herói Padrão",
     val podeAtacarEspecial: Boolean = true,
-
-// Novos campos para o Sistema de Fases
-val faseAtual: Int = 1,
-val monstrosDerrotadosNaFase: Int = 0,
-val monstrosNecessariosParaProximaFase: Int = 5,
-
-val isLoading: Boolean = false,
-val mensagemErro: String? = null
+    val faseAtual: Int = 1,
+    val monstrosDerrotadosNaFase: Int = 0,
+    val monstrosNecessariosParaProximaFase: Int = 5,
+    val isLoading: Boolean = false,
+    val mensagemErro: String? = null
 )

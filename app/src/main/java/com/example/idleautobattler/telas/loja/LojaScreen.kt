@@ -55,7 +55,6 @@ fun LojaScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Header Superior
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -79,7 +78,6 @@ fun LojaScreen(
                 }
             }
 
-            // Card de Recursos (Ouro + Dano Atual)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f)),
@@ -126,7 +124,6 @@ fun LojaScreen(
                 }
             }
 
-            // Filtros de Categoria
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start,
@@ -143,7 +140,6 @@ fun LojaScreen(
                 }
             }
 
-            // Lista de Itens da Loja
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)

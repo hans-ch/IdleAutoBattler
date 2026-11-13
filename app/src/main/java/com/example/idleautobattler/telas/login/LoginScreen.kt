@@ -55,7 +55,6 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Ícone do Herói
                 Box(
                     modifier = Modifier
                         .size(90.dp)
@@ -76,7 +75,6 @@ fun LoginScreen(
                     )
                 }
 
-                // Títulos
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "⚔️ Idle Auto Battler",
@@ -92,7 +90,6 @@ fun LoginScreen(
                     )
                 }
 
-                // Campo do Nome (Sem senha, sem complicações)
                 OutlinedTextField(
                     value = nomeUsuario,
                     onValueChange = { nomeUsuario = it },
@@ -107,7 +104,6 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Botão Simples de Login
                 if (!estaLogado) {
                     Button(
                         onClick = {

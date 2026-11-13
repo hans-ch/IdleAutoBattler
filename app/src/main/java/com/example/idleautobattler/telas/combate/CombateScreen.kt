@@ -32,14 +32,12 @@ fun CombateScreen(
     onPerderOuro: (Int) -> Unit = {},
     onGolpeEspecial: () -> Unit = {}
 ) {
-    // Cores de ambiente modernas por fase
     val (corPrincipal, corSecundaria, corIluminacao) = when (uiState.faseAtual % 3) {
-        1 -> Triple(Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF38BDF8)) // Caverna Néon / Ciano
-        2 -> Triple(Color(0xFF064E3B), Color(0xFF022C22), Color(0xFF34D399)) // Floresta Sombria / Esmeralda
-        else -> Triple(Color(0xFF450A0A), Color(0xFF18181B), Color(0xFFF87171)) // Vulcão / Carmim
+        1 -> Triple(Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF38BDF8))
+        2 -> Triple(Color(0xFF064E3B), Color(0xFF022C22), Color(0xFF34D399))
+        else -> Triple(Color(0xFF450A0A), Color(0xFF18181B), Color(0xFFF87171))
     }
 
-    // Animação de pulsar do brilho de fundo
     val infiniteTransition = rememberInfiniteTransition(label = "brilho")
     val alphaBrilho by infiniteTransition.animateFloat(
         initialValue = 0.3f,
@@ -51,7 +49,6 @@ fun CombateScreen(
         label = "alphaBrilho"
     )
 
-    // Animações de escala para o Herói e para o Monstro
     val escalaHeroi by animateFloatAsState(
         targetValue = if (uiState.animarAtaqueHeroi) 1.25f else 1.0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -62,7 +59,6 @@ fun CombateScreen(
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "escalaMonstro"
     )
-    // Animação de morte / desaparecimento do herói
     val alphaHeroi by animateFloatAsState(
         targetValue = if (uiState.vidaHeroiAtual <= 0f) 0.2f else 1.0f,
         animationSpec = tween(500),
@@ -78,7 +74,6 @@ fun CombateScreen(
                 )
             )
     ) {
-        // --- 1. ILUMINAÇÃO DE FUNDO (Luz Ambiental no Centro) ---
         Box(
             modifier = Modifier
                 .size(320.dp)
@@ -93,7 +88,6 @@ fun CombateScreen(
                 )
         )
 
-        // --- 2. CONTEÚDO DA TELA ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -101,7 +95,6 @@ fun CombateScreen(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // HUD Superior (Vidro Flutuante com Bordas Iluminadas)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -109,7 +102,6 @@ fun CombateScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Card de Ouro
                 Surface(
                     color = Color.Black.copy(alpha = 0.4f),
                     shape = RoundedCornerShape(16.dp),
@@ -125,7 +117,6 @@ fun CombateScreen(
                     }
                 }
 
-                // Indicador de Fase
                 Surface(
                     color = corIluminacao.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(16.dp),
@@ -140,7 +131,6 @@ fun CombateScreen(
                     )
                 }
 
-                // Card de DPS
                 Surface(
                     color = Color.Black.copy(alpha = 0.4f),
                     shape = RoundedCornerShape(16.dp),
@@ -156,18 +146,15 @@ fun CombateScreen(
                 }
             }
 
-            // --- 3. CAMPO DE BATALHA (MONSTRO VS HERÓI) ---
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // ARENA MONSTRO (Com animação de ataque aplicada)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.scale(escalaMonstro)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        // Sombra de Chão
                         Box(
                             modifier = Modifier
                                 .size(110.dp, 30.dp)
@@ -178,7 +165,6 @@ fun CombateScreen(
                                     )
                                 )
                         )
-                        // Aura Vermelha do Monstro
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
@@ -214,20 +200,17 @@ fun CombateScreen(
                     )
                 }
 
-                // VS Divisor com efeito Neon
                 Text(
                     text = "⚔️",
                     fontSize = 26.sp,
                     modifier = Modifier.padding(vertical = 2.dp)
                 )
 
-                // ARENA HERÓI (Com animação de ataque aplicada)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.scale(escalaHeroi).graphicsLayer(alpha = alphaHeroi)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        // Sombra de Chão para o Herói
                         Box(
                             modifier = Modifier
                                 .size(110.dp, 30.dp)
@@ -238,7 +221,6 @@ fun CombateScreen(
                                     )
                                 )
                         )
-                        // Aura Azul/Neon do Herói
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
@@ -256,7 +238,6 @@ fun CombateScreen(
                                     contentScale = ContentScale.Fit
                                 )
                             } else {
-                                // Fallback temporario: a arte das demais skins chega na Fase 2.
                                 val emojiSkin = when (uiState.skinEquipada) {
                                     "Mago de Fogo" -> "🧙‍♂️"
                                     "Ninja das Sombras" -> "🥷"
@@ -286,12 +267,10 @@ fun CombateScreen(
                 }
             }
 
-            // --- 4. CONTROLES E LOG (RODAPÉ) ---
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Caixa de Log em Glassmorphism
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -313,7 +292,6 @@ fun CombateScreen(
                     }
                 }
 
-                // Botão Golpe Fúria Moderno
                 Button(
                     onClick = onGolpeEspecial,
                     enabled = uiState.podeAtacarEspecial,
