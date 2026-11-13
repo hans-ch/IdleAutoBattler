@@ -13,6 +13,13 @@ object CatalogoDeImagens {
 
     // --- Guerreiro / skins ---
     @DrawableRes val guerreiro = R.drawable.guerreiro
+    @DrawableRes val magoFogo = R.drawable.mago_fogo
+    @DrawableRes val matadorDragao = R.drawable.matador_dragao
+    @DrawableRes val espadachimCyborg = R.drawable.espadachim_cyborg
+    @DrawableRes val ninja = R.drawable.ninja
+    @DrawableRes val reiSupremo = R.drawable.rei_supremo
+
+
 
 
     @DrawableRes
@@ -34,6 +41,11 @@ object CatalogoDeImagens {
     @DrawableRes
     fun iconeDeSkin(nome: String): Int? = when (nome) {
         "Herói Padrão" -> guerreiro
+        "Mago de Fogo" -> magoFogo
+        "Matador de Dragões" -> matadorDragao
+        "Espadachim Cyborg" -> espadachimCyborg
+        "Ninja" -> ninja
+        "Rei Supremo" -> reiSupremo
         else -> null
     }
 }
