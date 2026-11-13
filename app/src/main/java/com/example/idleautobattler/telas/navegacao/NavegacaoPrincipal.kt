@@ -56,7 +56,7 @@ sealed class Tela(
     object Loja : Tela("loja", "Loja", Icons.Default.ShoppingCart)
     object Perfil : Tela("perfil", "Perfil", Icons.Default.Person)
     object Skins : Tela("skins", "Skins", Icons.Default.Palette)
-    object Configuracoes : Tela("configuracoes", "Configurações", Icons.Default.Settings)
+    object Configuracoes : Tela("configuracoes", "Config", Icons.Default.Settings)
 }
 
 val telasBarraNavegacao = listOf(

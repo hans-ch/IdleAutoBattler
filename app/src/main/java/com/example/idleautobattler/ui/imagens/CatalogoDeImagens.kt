@@ -3,12 +3,6 @@ package com.example.idleautobattler.ui.imagens
 import androidx.annotation.DrawableRes
 import com.example.idleautobattler.R
 
-/**
- * Catalogo unico de arte do jogo.
- *
- * Ponto unico de verdade: o campo de batalha e a aba de skins leem daqui,
- * evitando dois mapeamentos paralelos que podem divergir.
- */
 object CatalogoDeImagens {
 
     // --- Inimigos ---
@@ -20,7 +14,7 @@ object CatalogoDeImagens {
     // --- Guerreiro / skins ---
     @DrawableRes val guerreiro = R.drawable.guerreiro
 
-    /** Arte do monstro pelo nome usado no estado do combate. */
+
     @DrawableRes
     fun iconeDeMonstro(nome: String): Int = when (nome) {
         "Slime de Cristal" -> monstroSlime

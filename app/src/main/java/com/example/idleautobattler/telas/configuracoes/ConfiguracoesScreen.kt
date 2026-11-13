@@ -146,12 +146,13 @@ fun ConfiguracoesScreen(
                             }
                         }
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            listOf("Baixa", "Média", "Alta").forEach { opcao ->
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                            listOf("Low", "Mid", "High").forEach { opcao ->
                                 FilterChip(
                                     selected = qualidadeGrafica == opcao,
                                     onClick = { qualidadeGrafica = opcao },
-                                    label = { Text(opcao, fontSize = 11.sp) }
+                                    label = { Text(opcao, fontSize = 10.sp) }
                                 )
                             }
                         }
